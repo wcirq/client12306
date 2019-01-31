@@ -30,4 +30,16 @@ tools:context=".LoginActivity">
         app:cursor="@drawable/cursortest"
         />
 
+    <com.wcy.client12306.ui.SuperEditText
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+
+        app:ic_left_click="@drawable/password_click"
+        app:ic_left_unclick="@drawable/password_unclick"
+
+        android:textSize="20sp"
+        android:inputType="textPassword"
+
+        />
+
 </LinearLayout>

@@ -41,7 +41,7 @@ public class WelcomeActivity extends Activity {
     TextView skipButton;
     TextView logoText;
     Timer timer = new Timer();
-    int waiting_time = 3;
+    int waiting_time = 1;
 
     private static class MyHandler extends Handler{
         private final WeakReference<WelcomeActivity> mTarget;

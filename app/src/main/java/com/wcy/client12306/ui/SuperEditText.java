@@ -26,15 +26,9 @@ public class SuperEditText extends AppCompatEditText {
      * */
     private Paint mPaint; // 画笔
 
-    private int  ic_deleteResID; // 删除图标 资源ID
     private Drawable  ic_delete; // 删除图标
-    private int delete_x,delete_y,delete_width,delete_height; // 删除图标起点(x,y)、删除图标宽、高（px）
 
-    private int  ic_left_clickResID,ic_left_unclickResID;    // 左侧图标 资源ID（点击 & 无点击）
     private Drawable  ic_left_click,ic_left_unclick; // 左侧图标（点击 & 未点击）
-    private int left_x,left_y,left_width,left_height; // 左侧图标起点（x,y）、左侧图标宽、高（px）
-
-    private int cursor; // 光标
 
     // 分割线变量
     private int lineColor_click,lineColor_unclick;// 点击时 & 未点击颜色
@@ -67,32 +61,34 @@ public class SuperEditText extends AppCompatEditText {
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.SuperEditText);
 
         /**
-         * 初始化左侧图标（点击 & 未点击）
+         * 初始化左侧图标(点击 & 未点击)
          */
 
         // a. 点击状态的左侧图标
         // 1. 获取资源ID
-        ic_left_clickResID = typedArray.getResourceId(R.styleable.SuperEditText_ic_left_click, R.drawable.ic_left_click);
+        int ic_left_clickResID = typedArray.getResourceId(R.styleable.SuperEditText_ic_left_click, R.drawable.ic_left_click);
         // 2. 根据资源ID获取图标资源（转化成Drawable对象）
         ic_left_click =  getResources().getDrawable(ic_left_clickResID);
         // 3. 设置图标大小
         // 起点(x，y)、宽= left_width、高 = left_height
-        left_x = typedArray.getInteger(R.styleable.SuperEditText_left_x, 0);
-        left_y = typedArray.getInteger(R.styleable.SuperEditText_left_y, 0);
-        left_width = typedArray.getInteger(R.styleable.SuperEditText_left_width, 60);
-        left_height = typedArray.getInteger(R.styleable.SuperEditText_left_height, 60);
+        int left_x = typedArray.getInteger(R.styleable.SuperEditText_left_x, 0);
+        int left_y = typedArray.getInteger(R.styleable.SuperEditText_left_y, 0);
+        int left_width = typedArray.getInteger(R.styleable.SuperEditText_left_width, 60);
+        // 左侧图标起点（x,y）、左侧图标宽、高（px）
+        int left_height = typedArray.getInteger(R.styleable.SuperEditText_left_height, 60);
 
-        ic_left_click.setBounds(left_x, left_y,left_width, left_height);
+        ic_left_click.setBounds(left_x, left_y, left_width, left_height);
         // Drawable.setBounds(x,y,width,height) = 设置Drawable的初始位置、宽和高等信息
         // x = 组件在容器X轴上的起点、y = 组件在容器Y轴上的起点、width=组件的长度、height = 组件的高度
 
         // b. 未点击状态的左侧图标
         // 1. 获取资源ID
-        ic_left_unclickResID = typedArray.getResourceId(R.styleable.SuperEditText_ic_left_unclick, R.drawable.ic_left_unclick);
+        // 左侧图标 资源ID（点击 & 无点击）
+        int ic_left_unclickResID = typedArray.getResourceId(R.styleable.SuperEditText_ic_left_unclick, R.drawable.ic_left_unclick);
         // 2. 根据资源ID获取图标资源（转化成Drawable对象）
         // 3. 设置图标大小（此处默认左侧图标点解 & 未点击状态的大小相同）
         ic_left_unclick =  getResources().getDrawable(ic_left_unclickResID);
-        ic_left_unclick.setBounds(left_x, left_y,left_width, left_height);
+        ic_left_unclick.setBounds(left_x, left_y, left_width, left_height);
 
 
         /**
@@ -100,15 +96,17 @@ public class SuperEditText extends AppCompatEditText {
          */
 
         // 1. 获取资源ID
-        ic_deleteResID = typedArray.getResourceId(R.styleable.SuperEditText_ic_delete,R.drawable.delete);
+        // 删除图标 资源ID
+        int ic_deleteResID = typedArray.getResourceId(R.styleable.SuperEditText_ic_delete, R.drawable.delete);
         // 2. 根据资源ID获取图标资源（转化成Drawable对象）
         ic_delete =  getResources().getDrawable(ic_deleteResID);
         // 3. 设置图标大小
         // 起点(x，y)、宽= left_width、高 = left_height
-        delete_x = typedArray.getInteger(R.styleable.SuperEditText_delete_x, 0);
-        delete_y = typedArray.getInteger(R.styleable.SuperEditText_delete_y, 0);
-        delete_width = typedArray.getInteger(R.styleable.SuperEditText_delete_width, 60);
-        delete_height = typedArray.getInteger(R.styleable.SuperEditText_delete_height, 60);
+        int delete_x = typedArray.getInteger(R.styleable.SuperEditText_delete_x, 0);
+        int delete_y = typedArray.getInteger(R.styleable.SuperEditText_delete_y, 0);
+        int delete_width = typedArray.getInteger(R.styleable.SuperEditText_delete_width, 60);
+        // 删除图标起点(x,y)、删除图标宽、高（px）
+        int delete_height = typedArray.getInteger(R.styleable.SuperEditText_delete_height, 60);
         ic_delete.setBounds(delete_x, delete_y, delete_width, delete_height);
 
         /**
@@ -133,7 +131,8 @@ public class SuperEditText extends AppCompatEditText {
          */
         // 原理：通过 反射机制 动态设置光标
         // 1. 获取资源ID
-        cursor = typedArray.getResourceId(R.styleable.SuperEditText_cursor, R.drawable.cursor);
+        // 光标
+        int cursor = typedArray.getResourceId(R.styleable.SuperEditText_cursor, R.drawable.cursor);
         try {
 
             // 2. 通过反射 获取光标属性
@@ -259,5 +258,4 @@ public class SuperEditText extends AppCompatEditText {
                 this.getMeasuredHeight() - linePosition, mPaint);
 
     }
-
 }

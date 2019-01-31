@@ -7,18 +7,22 @@
         <attr name="delete_y" format="integer"  />
         <attr name="delete_width" format="integer"  />
         <attr name="delete_height" format="integer"  />
-
+        <!--获取焦点时左边图标-->
         <attr name="ic_left_click" format="reference" />
+        <!--未获取焦点时左边图标-->
         <attr name="ic_left_unclick" format="reference" />
+        <!--左边图标 x y 方向与父容器的距离-->
         <attr name="left_x" format="integer"  />
         <attr name="left_y" format="integer"  />
+        <!--左边图标宽高-->
         <attr name="left_width" format="integer"  />
         <attr name="left_height" format="integer"  />
-
+        <!--获取焦点时的颜色-->
         <attr name="lineColor_click" format="color"  />
+        <!--未获取焦点时的颜色-->
         <attr name="lineColor_unclick" format="color"  />
         <attr name="linePosition" format="integer"  />
-
+        <!--线的位置-->
         <attr name="cursor" format="reference" />
 
     </declare-styleable>
