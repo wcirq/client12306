@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="SuperEditText">
+    <declare-styleable name="SuperEditTextView">
 
         <attr name="ic_delete" format="reference" />
         <attr name="delete_x" format="integer"  />

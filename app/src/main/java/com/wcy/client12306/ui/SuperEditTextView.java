@@ -19,7 +19,7 @@ import java.lang.reflect.Field;
  * Created by Carson_Ho on 17/8/4.
  */
 
-public class SuperEditText extends AppCompatEditText {
+public class SuperEditTextView extends AppCompatEditText {
 
     /*
      * 定义属性变量
@@ -36,17 +36,17 @@ public class SuperEditText extends AppCompatEditText {
     private int linePosition;
 
 
-    public SuperEditText(Context context) {
+    public SuperEditTextView(Context context) {
         super(context);
 
     }
 
-    public SuperEditText(Context context, AttributeSet attrs) {
+    public SuperEditTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs);
     }
 
-    public SuperEditText(Context context, AttributeSet attrs, int defStyleAttr) {
+    public SuperEditTextView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs);
     }
@@ -58,7 +58,7 @@ public class SuperEditText extends AppCompatEditText {
     private void init(Context context, AttributeSet attrs) {
 
         // 获取控件资源
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.SuperEditText);
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.SuperEditTextView);
 
         /**
          * 初始化左侧图标(点击 & 未点击)
@@ -66,16 +66,16 @@ public class SuperEditText extends AppCompatEditText {
 
         // a. 点击状态的左侧图标
         // 1. 获取资源ID
-        int ic_left_clickResID = typedArray.getResourceId(R.styleable.SuperEditText_ic_left_click, R.drawable.ic_left_click);
+        int ic_left_clickResID = typedArray.getResourceId(R.styleable.SuperEditTextView_ic_left_click, R.drawable.ic_left_click);
         // 2. 根据资源ID获取图标资源（转化成Drawable对象）
         ic_left_click =  getResources().getDrawable(ic_left_clickResID);
         // 3. 设置图标大小
         // 起点(x，y)、宽= left_width、高 = left_height
-        int left_x = typedArray.getInteger(R.styleable.SuperEditText_left_x, 0);
-        int left_y = typedArray.getInteger(R.styleable.SuperEditText_left_y, 0);
-        int left_width = typedArray.getInteger(R.styleable.SuperEditText_left_width, 60);
+        int left_x = typedArray.getInteger(R.styleable.SuperEditTextView_left_x, 0)-10;
+        int left_y = typedArray.getInteger(R.styleable.SuperEditTextView_left_y, 0);
+        int left_width = typedArray.getInteger(R.styleable.SuperEditTextView_left_width, 60);
         // 左侧图标起点（x,y）、左侧图标宽、高（px）
-        int left_height = typedArray.getInteger(R.styleable.SuperEditText_left_height, 60);
+        int left_height = typedArray.getInteger(R.styleable.SuperEditTextView_left_height, 60);
 
         ic_left_click.setBounds(left_x, left_y, left_width, left_height);
         // Drawable.setBounds(x,y,width,height) = 设置Drawable的初始位置、宽和高等信息
@@ -84,7 +84,7 @@ public class SuperEditText extends AppCompatEditText {
         // b. 未点击状态的左侧图标
         // 1. 获取资源ID
         // 左侧图标 资源ID（点击 & 无点击）
-        int ic_left_unclickResID = typedArray.getResourceId(R.styleable.SuperEditText_ic_left_unclick, R.drawable.ic_left_unclick);
+        int ic_left_unclickResID = typedArray.getResourceId(R.styleable.SuperEditTextView_ic_left_unclick, R.drawable.ic_left_unclick);
         // 2. 根据资源ID获取图标资源（转化成Drawable对象）
         // 3. 设置图标大小（此处默认左侧图标点解 & 未点击状态的大小相同）
         ic_left_unclick =  getResources().getDrawable(ic_left_unclickResID);
@@ -97,16 +97,16 @@ public class SuperEditText extends AppCompatEditText {
 
         // 1. 获取资源ID
         // 删除图标 资源ID
-        int ic_deleteResID = typedArray.getResourceId(R.styleable.SuperEditText_ic_delete, R.drawable.delete);
+        int ic_deleteResID = typedArray.getResourceId(R.styleable.SuperEditTextView_ic_delete, R.drawable.delete);
         // 2. 根据资源ID获取图标资源（转化成Drawable对象）
         ic_delete =  getResources().getDrawable(ic_deleteResID);
         // 3. 设置图标大小
         // 起点(x，y)、宽= left_width、高 = left_height
-        int delete_x = typedArray.getInteger(R.styleable.SuperEditText_delete_x, 0);
-        int delete_y = typedArray.getInteger(R.styleable.SuperEditText_delete_y, 0);
-        int delete_width = typedArray.getInteger(R.styleable.SuperEditText_delete_width, 60);
+        int delete_x = typedArray.getInteger(R.styleable.SuperEditTextView_delete_x, 0);
+        int delete_y = typedArray.getInteger(R.styleable.SuperEditTextView_delete_y, 0);
+        int delete_width = typedArray.getInteger(R.styleable.SuperEditTextView_delete_width, 60);
         // 删除图标起点(x,y)、删除图标宽、高（px）
-        int delete_height = typedArray.getInteger(R.styleable.SuperEditText_delete_height, 60);
+        int delete_height = typedArray.getInteger(R.styleable.SuperEditTextView_delete_height, 60);
         ic_delete.setBounds(delete_x, delete_y, delete_width, delete_height);
 
         /**
@@ -132,7 +132,7 @@ public class SuperEditText extends AppCompatEditText {
         // 原理：通过 反射机制 动态设置光标
         // 1. 获取资源ID
         // 光标
-        int cursor = typedArray.getResourceId(R.styleable.SuperEditText_cursor, R.drawable.cursor);
+        int cursor = typedArray.getResourceId(R.styleable.SuperEditTextView_cursor, R.drawable.cursor);
         try {
 
             // 2. 通过反射 获取光标属性
@@ -155,15 +155,16 @@ public class SuperEditText extends AppCompatEditText {
         // 2. 设置分割线颜色（使用十六进制代码，如#333、#8e8e8e）
         int lineColorClick_default = context.getResources().getColor(R.color.lineColor_click); // 默认 = 蓝色#1296db
         int lineColorunClick_default = context.getResources().getColor(R.color.lineColor_unclick); // 默认 = 灰色#9b9b9b
-        lineColor_click = typedArray.getColor(R.styleable.SuperEditText_lineColor_click, lineColorClick_default);
-        lineColor_unclick = typedArray.getColor(R.styleable.SuperEditText_lineColor_unclick, lineColorunClick_default);
+        lineColor_click = typedArray.getColor(R.styleable.SuperEditTextView_lineColor_click, lineColorClick_default);
+        lineColor_unclick = typedArray.getColor(R.styleable.SuperEditTextView_lineColor_unclick, lineColorunClick_default);
+
         color = lineColor_unclick;
 
         mPaint.setColor(lineColor_unclick); // 分割线默认颜色 = 灰色
         setTextColor(color); // 字体默认颜色 = 灰色
 
         // 3. 分割线位置
-        linePosition = typedArray.getInteger(R.styleable.SuperEditText_linePosition, 1);
+        linePosition = typedArray.getInteger(R.styleable.SuperEditTextView_linePosition, 1)+10;
         // 消除自带下划线
         setBackground(null);
 

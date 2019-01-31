@@ -9,4 +9,5 @@
     <color name="lineColor_unclick">#9b9b9b</color>
     <color name="colorDeafult">#9b9b9b</color>
     <color name="colorfocus">#1296db</color>
+    <color name="textColor">#F2111111</color>
 </resources>
