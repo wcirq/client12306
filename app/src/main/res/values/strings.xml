@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">这不是12306</string>
+    <string name="welcome_text">12306</string>
+    <string name="skip">跳过 %1$d</string>
+</resources>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".WelcomeActivity">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+        <TextView
+            android:id="@+id/skipButton"
+            android:layout_width="70sp"
+            android:layout_height="30sp"
+            android:layout_marginTop="30dp"
+            android:paddingLeft="10dp"
+            android:layout_marginStart="250dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/circular_bead_text"
+            android:textSize="18sp"
+            android:text="@string/skip"/>
+        <TextView
+            android:id="@+id/logo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="500dp"
+            android:gravity="center"
+            android:textSize="48sp"
+            android:background="@drawable/circular_bead_text"
+            android:textStyle="bold"
+            android:text="@string/welcome_text"/>
+    </RelativeLayout>
+
+
+</android.support.constraint.ConstraintLayout>
