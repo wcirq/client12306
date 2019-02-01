@@ -7,13 +7,13 @@
     android:orientation="vertical"
     tools:context=".LoginActivity">
     <com.wcy.client12306.ui.SuperEditTextView
-        android:layout_width="250dp"
+        android:layout_width="293dp"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        android:maxLength="25"
+        android:textColor="@color/colorfocus"
         android:layout_gravity="center"
-        android:hint="@string/userName"
-        android:inputType="textEmailAddress"
+        android:maxLength="25"
+        android:singleLine="true"
 
         app:ic_left_click="@drawable/ic_left_click"
         app:ic_left_unclick="@drawable/ic_left_unclick"
@@ -30,66 +30,35 @@
 
         app:lineColor_click="@color/colorfocus"
         app:lineColor_unclick="@color/colorDeafult"
-        app:linePosition="0"
+        app:linePosition="1"
 
         app:cursor="@drawable/cursortest"
         />
 
     <com.wcy.client12306.ui.SuperEditTextView
-        android:layout_width="250dp"
+        android:layout_width="293dp"
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:maxLength="25"
+        android:singleLine="true"
         android:layout_gravity="center"
         android:inputType="textPassword"
         android:hint="@string/password"
 
-        app:linePosition="0"
+        app:linePosition="1"
         app:ic_left_click="@drawable/password_click"
         app:ic_left_unclick="@drawable/password_unclick"
         />
+    <ImageView
+        android:id="@+id/code"
+        android:layout_width="293dp"
+        android:layout_height="190dp"
+        android:layout_marginTop="30dp"
+        android:background="@color/colorDeafult"
+        android:layout_gravity="center"/>
 
-    <com.wcy.client12306.ui.PaintView
-        android:id="@+id/activity_paint_pv"
-        android:layout_width="250dp"
-        android:layout_height="300dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="30dp"/>
-
-    <TextView
-        android:id="@+id/activity_paint_undo"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="撤销" />
-
-    <TextView
-        android:id="@+id/activity_paint_redo"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="恢复" />
-
-    <TextView
-        android:id="@+id/activity_paint_color"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="红色" />
-
-    <TextView
-        android:id="@+id/activity_paint_clear"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="清空" />
-
-    <TextView
-        android:id="@+id/activity_paint_eraser"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="橡皮擦" />
-
-    <TextView
-        android:id="@+id/activity_paint_save"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="保存" />
-
+    <!--<com.wcy.client12306.ui.GraphicsCodeView-->
+        <!--android:background="@android:color/background_dark"-->
+        <!--android:layout_width="250dp"-->
+        <!--android:layout_height="300dp" />-->
 </LinearLayout>

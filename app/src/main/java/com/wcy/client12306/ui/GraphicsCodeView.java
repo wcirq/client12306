@@ -24,7 +24,7 @@ public class GraphicsCodeView extends View {
 
     public GraphicsCodeView(Context context) {
         super(context);
-        init();
+//        init();
     }
 
     private void init() {

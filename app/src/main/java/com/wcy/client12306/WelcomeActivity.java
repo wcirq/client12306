@@ -10,6 +10,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -33,7 +34,7 @@ import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class WelcomeActivity extends Activity {
+public class WelcomeActivity extends AppCompatActivity {
     String image_path;
     Bitmap bitmap;
     ImageView imageView;
@@ -41,7 +42,7 @@ public class WelcomeActivity extends Activity {
     TextView skipButton;
     TextView logoText;
     Timer timer = new Timer();
-    int waiting_time = 5;
+    int waiting_time = 1;
 
     private static class MyHandler extends Handler{
         private final WeakReference<WelcomeActivity> mTarget;
@@ -89,8 +90,10 @@ public class WelcomeActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        getSupportActionBar().hide(); // 继承的是AppCompatActivity时
-         requestWindowFeature(Window.FEATURE_NO_TITLE); // 继承的是Activity时
+        if (getSupportActionBar()!=null){
+            getSupportActionBar().hide(); // 继承的是AppCompatActivity时
+        }
+//        requestWindowFeature(Window.FEATURE_NO_TITLE); // 继承的是Activity时
         getWindow().setFlags(WindowManager.LayoutParams. FLAG_FULLSCREEN , WindowManager.LayoutParams. FLAG_FULLSCREEN);
         setContentView(R.layout.activity_welcome);
         intent = new Intent(this, LoginActivity.class);
