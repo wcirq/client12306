@@ -42,7 +42,7 @@ public class WelcomeActivity extends AppCompatActivity {
     TextView skipButton;
     TextView logoText;
     Timer timer = new Timer();
-    int waiting_time = 1;
+    int waiting_time = 3;
 
     private static class MyHandler extends Handler{
         private final WeakReference<WelcomeActivity> mTarget;

@@ -36,8 +36,8 @@ public class Crawler {
     public String getUrl(){
         String str = null;
         try {
-//            str = getHtml("https://sj.enterdesk.com/woman/"+(int) (Math.random() * 20+1)+".html");
-            str = getHtml("https://sj.enterdesk.com/"+(int) (Math.random() * 20+1)+".html");
+            str = getHtml("https://www.enterdesk.com/tag-%E9%85%A5%E8%83%B8/"+(int) (Math.random() * 20+1)+".html");
+//            str = getHtml("https://sj.enterdesk.com/"+(int) (Math.random() * 20+1)+".html");
             List<String> ouput = getMatcher(str, "src=\"(https://up.enterdesk.com[\\w\\s./:]+?)\"");
             int index = (int) (Math.random() * ouput.size());
             String url = ouput.get(index);

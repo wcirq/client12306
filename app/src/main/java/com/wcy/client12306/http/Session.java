@@ -16,10 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class HttpUtil {
+public class Session {
     private List<String> responseCookie = null;
     private String sessionIdString = null;
-    public HttpUtil(){
+    public Session(){
 
     }
 
@@ -170,7 +170,7 @@ public class HttpUtil {
     }
 
     public static void main(String args[]){
-        HttpUtil networkUtil = new HttpUtil();
+        Session networkUtil = new Session();
         JSONObject result1 = (JSONObject) networkUtil.get("http://192.168.150.151:8000/getjson", null);
         String result2 = (String) networkUtil.get("http://192.168.150.151:8000/hello", null);
 

@@ -1,26 +1,41 @@
 package com.wcy.client12306;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.wcy.client12306.http.HttpUtil;
-import com.wcy.client12306.ui.PaintView;
+import com.wcy.client12306.ui.SuperEditTextView;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Objects;
 
 
 public class LoginActivity extends AppCompatActivity {
+    private MyHandler handler = null;
     private ImageView imageView;
+    private ArrayList<Bitmap> bitmaps;
     private Bitmap bitmap;
+    private LinearLayout linearLayoutImageCode;
+    private int choose[] = new int[8];
+    private JSONObject jsonObject=null;
+    HttpUtil networkUtil = new HttpUtil();
+
+    public LoginActivity() {
+    }
 
     private static class MyHandler extends Handler {
         private final WeakReference<LoginActivity> mTarget;
@@ -33,7 +48,57 @@ public class LoginActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             LoginActivity activity = mTarget.get();
             if (msg.what==1){
-                activity.imageView.setImageBitmap(activity.bitmap);
+                activity.linearLayoutImageCode.setVisibility(View.VISIBLE);
+                int i = 0;
+                for (Bitmap bmp:activity.bitmaps){
+                    switch (i){
+                        case 0:
+                            ImageView imageView0 = activity.findViewById(R.id.question);
+                            imageView0.setImageBitmap(bmp);
+                            break;
+                        case 1:
+                            ImageView imageView1 = activity.findViewById(R.id.answer1);
+                            imageView1.setImageBitmap(bmp);
+                            break;
+                        case 2:
+                            ImageView imageView2 = activity.findViewById(R.id.answer2);
+                            imageView2.setImageBitmap(bmp);
+                            break;
+                        case 3:
+                            ImageView imageView3 = activity.findViewById(R.id.answer3);
+                            imageView3.setImageBitmap(bmp);
+                            break;
+                        case 4:
+                            ImageView imageView4 = activity.findViewById(R.id.answer4);
+                            imageView4.setImageBitmap(bmp);
+                            break;
+                        case 5:
+                            ImageView imageView5 = activity.findViewById(R.id.answer5);
+                            imageView5.setImageBitmap(bmp);
+                            break;
+                        case 6:
+                            ImageView imageView6 = activity.findViewById(R.id.answer6);
+                            imageView6.setImageBitmap(bmp);
+                            break;
+                        case 7:
+                            ImageView imageView7 = activity.findViewById(R.id.answer7);
+                            imageView7.setImageBitmap(bmp);
+                            break;
+                        case 8:
+                            ImageView imageView8 = activity.findViewById(R.id.answer8);
+                            imageView8.setImageBitmap(bmp);
+                            break;
+                    }
+                    i++;
+                }
+            }else if (msg.what==2){
+                TextView textView = activity.findViewById(R.id.test);
+                if(activity.jsonObject!=null){
+//                    textView.setText(textView.getText()+activity.jsonObject.toString());
+                    textView.setText(activity.jsonObject.toString());
+                }else {
+                    textView.setText("null");
+                }
             }
         }
     }
@@ -42,16 +107,15 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
-        final MyHandler handler = new MyHandler(LoginActivity.this);
-        imageView = findViewById(R.id.code);
+        linearLayoutImageCode = findViewById(R.id.imageCode);
+        handler = new MyHandler(LoginActivity.this);
+        initMenu();
         new Thread(new Runnable() {
             @Override
             public void run() {
-                HttpUtil networkUtil = new HttpUtil();
                 String url = "https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand&0.6523880813900003";
-                bitmap = (Bitmap) networkUtil.doGet(url, null);
-                ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
+                bitmap = (Bitmap) networkUtil.get(url, null);
+                bitmaps = new ArrayList<Bitmap>();
                 for (int i=0;i<9;i++){
                     Bitmap bmp = null;
                     if (i==0){
@@ -60,7 +124,12 @@ public class LoginActivity extends AppCompatActivity {
                         int j = i-1;
                         int col = j%4;
                         int row = (int) j/4;
-                        bmp = Bitmap.createBitmap(bitmap, row*71, col*71+28, row*71+71, col*71+28+71);
+                        int x = col*72+3;
+                        int y = row*72+39;
+                        int w = 72;
+                        int h = 72;
+                        bmp = Bitmap.createBitmap(bitmap, x, y, w, h);
+                        Log.d("","");
                     }
                     bitmaps.add(bmp);
                 }
@@ -69,83 +138,123 @@ public class LoginActivity extends AppCompatActivity {
         }).start();
 
     }
-//    private void initView() {
-//        paintView = (PaintView) findViewById(R.id.activity_paint_pv);
-//    }
-//
-//    private void initMenu() {
-//        //撤销
-//        menuItemSelected(R.id.activity_paint_undo, new MenuSelectedListener() {
-//            @Override
-//            public void onMenuSelected() {
-////                paintView.undo();
-//            }
-//        });
-//        //恢复
-//        menuItemSelected(R.id.activity_paint_redo, new MenuSelectedListener() {
-//            @Override
-//            public void onMenuSelected() {
-////                paintView.redo();
-//            }
-//        });
-//
-//        //颜色
-//        menuItemSelected(R.id.activity_paint_color, new MenuSelectedListener() {
-//            @Override
-//            public void onMenuSelected() {
-////                paintView.setPaintColor(Color.RED);
-//            }
-//        });
-//        //清空
-//        menuItemSelected(R.id.activity_paint_clear, new MenuSelectedListener() {
-//            @Override
-//            public void onMenuSelected() {
-////                paintView.clearAll();
-//            }
-//        });
-//
-//        //橡皮擦
-//        menuItemSelected(R.id.activity_paint_eraser, new MenuSelectedListener() {
-//            @Override
-//            public void onMenuSelected() {
-////                paintView.setEraserModel(true);
-//            }
-//        });
-//
-//        //保存
-//        menuItemSelected(R.id.activity_paint_save, new MenuSelectedListener() {
-//            @Override
-//            public void onMenuSelected() {
-//                String path = Environment.getExternalStorageDirectory().getPath()
-//                        + File.separator + "image";
-//                String imgName = "paint.jpg";
-////                if (paintView.saveImg(path, imgName)) {
-////                    ToastUtils.show(PaintViewActivity.this, "保存成功");
-////                }
-//            }
-//        });
-//    }
-//
-//    /**
-//     * 选中底部 Menu 菜单项
-//     */
-//    private void menuItemSelected(int viewId, final MenuSelectedListener listener) {
-//        findViewById(viewId).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                listener.onMenuSelected();
-//            }
-//        });
-//
-//    }
-//
-//    @Override
-//    protected void onDestroy() {
-//        super.onDestroy();
-//    }
-//
-//    interface MenuSelectedListener {
-//        void onMenuSelected();
-//    }
 
+    public void onClick(View view) {
+        String url = "https://kyfw.12306.cn/passport/captcha/captcha-check?answer=%s&rand=sjrand&login_site=E";
+        String []data = {"35,35", "105,35", "175,35", "245,35", "35,105", "105,105", "175,105", "245,105"};
+        StringBuilder answer = new StringBuilder();
+        for (int i=0;i<choose.length;i++){
+            if (choose[i]==1){
+                answer.append(",").append(data[i]);
+            }
+        }
+        //去除第一个字符
+        answer.deleteCharAt(0);
+        String answerStr = answer.toString().replace(",","%2C");
+        url = String.format(url, answerStr);
+        final String finalUrl = url;
+
+        final HashMap<String, String> paramsMap = new HashMap<>();
+        SuperEditTextView userName = findViewById(R.id.userName);
+        paramsMap.put("username", Objects.requireNonNull(userName.getText()).toString());
+        SuperEditTextView password = findViewById(R.id.password);
+        paramsMap.put("password", Objects.requireNonNull(password.getText()).toString());
+        paramsMap.put("appid", "otn");
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                jsonObject = (JSONObject) networkUtil.get(finalUrl, null);
+                String loginUrl = "https://kyfw.12306.cn/passport/web/login";
+                jsonObject = (JSONObject) networkUtil.post(loginUrl, null, paramsMap);
+                handler.sendEmptyMessage(2);
+            }
+        }).start();
+    }
+
+    public void changeImageViewAlpha(int viewId, int id){
+        ImageView imageView = findViewById(viewId);
+        float alpha = imageView.getAlpha();
+        if (alpha==0.5){
+            alpha=1f;
+            choose[id]=0;
+            imageView.setPadding(0,0,0,0);
+        }else {
+            alpha=0.5f;
+            choose[id]=1;
+            imageView.setPadding(10,10,10,10);
+        }
+        imageView.setAlpha(alpha);
+        TextView textView = findViewById(R.id.test);
+        textView.setText(Arrays.toString(choose));
+    }
+
+    private void initMenu() {
+        int viewIds[] = {R.id.answer1,R.id.answer2,R.id.answer3,R.id.answer4,R.id.answer5,R.id.answer6,R.id.answer7,R.id.answer8};
+        menuItemSelected(viewIds[0], new MenuSelectedListener() {
+            @Override
+            public void onMenuSelected(int viewId) {
+                changeImageViewAlpha(viewId, 0);
+            }
+        });
+        menuItemSelected(viewIds[1], new MenuSelectedListener() {
+            @Override
+            public void onMenuSelected(int viewId) {
+                changeImageViewAlpha(viewId, 1);
+            }
+        });
+        menuItemSelected(viewIds[2], new MenuSelectedListener() {
+            @Override
+            public void onMenuSelected(int viewId) {
+                changeImageViewAlpha(viewId, 2);
+            }
+        });
+        menuItemSelected(viewIds[3], new MenuSelectedListener() {
+            @Override
+            public void onMenuSelected(int viewId) {
+                changeImageViewAlpha(viewId, 3);
+            }
+        });
+        menuItemSelected(viewIds[4], new MenuSelectedListener() {
+            @Override
+            public void onMenuSelected(int viewId) {
+                changeImageViewAlpha(viewId, 4);
+            }
+        });
+        menuItemSelected(viewIds[5], new MenuSelectedListener() {
+            @Override
+            public void onMenuSelected(int viewId) {
+                changeImageViewAlpha(viewId, 5);
+            }
+        });
+        menuItemSelected(viewIds[6], new MenuSelectedListener() {
+            @Override
+            public void onMenuSelected(int viewId) {
+                changeImageViewAlpha(viewId, 6);
+            }
+        });
+        menuItemSelected(viewIds[7], new MenuSelectedListener() {
+            @Override
+            public void onMenuSelected(int viewId) {
+                changeImageViewAlpha(viewId, 7);
+            }
+        });
+    }
+
+    /**
+     * 选中底部 Menu 菜单项
+     */
+    private void menuItemSelected(final int viewId, final MenuSelectedListener listener) {
+        findViewById(viewId).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onMenuSelected(viewId);
+            }
+        });
+
+    }
+
+    interface MenuSelectedListener {
+        void onMenuSelected(int viewId);
+    }
 }
