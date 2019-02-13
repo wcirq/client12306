@@ -12,7 +12,7 @@ import java.net.Socket;
 public class Test {
     public static void main(String []args) throws IOException {
         Socket client = new Socket();
-        InetSocketAddress inetSocketAddress = new InetSocketAddress("www.runoob.com", 80);
+        InetSocketAddress inetSocketAddress = new InetSocketAddress("www.w3school.com", 80);
         // 建立TCP连接，虚拟机的地址为192.168.194.129
         // Nginx监听的端口设置为8080
         client.connect(inetSocketAddress, 1000);
