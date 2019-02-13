@@ -116,7 +116,7 @@ public class WelcomeActivity extends AppCompatActivity {
             }
         });
 
-        final Thread thread = new Thread(new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 image_path = getFilesDir().getAbsolutePath()+File.separator+"welcome.jpg";
@@ -132,15 +132,15 @@ public class WelcomeActivity extends AppCompatActivity {
                         InputStream inputStream = url.openStream();
                         bitmap = BitmapFactory.decodeStream(inputStream);
                         saveImage(bitmap);
-//                        handler.sendEmptyMessage(1);
+                        handler.sendEmptyMessage(1);
                     } catch (IOException e) {
                         Log.e("IOException", "连不上网络");
                         e.printStackTrace();
                     }
                 }
             }
-        });
-        thread.start();
+        }).start();
+
         timer.schedule(task, 1000, 1000);
         handler.postDelayed(new Runnable(){
 

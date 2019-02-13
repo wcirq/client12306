@@ -1,5 +1,7 @@
 package com.wcy.client12306.http;
 
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -34,16 +36,20 @@ public class Crawler {
     }
 
     public String getUrl(){
-        String str = null;
+        String html = null;
         try {
-            str = getHtml("https://www.enterdesk.com/tag-%E9%85%A5%E8%83%B8/"+(int) (Math.random() * 20+1)+".html");
+            html = getHtml("https://sj.enterdesk.com/woman/"+(int) (Math.random() * 20+1)+".html");
 //            str = getHtml("https://sj.enterdesk.com/"+(int) (Math.random() * 20+1)+".html");
-            List<String> ouput = getMatcher(str, "src=\"(https://up.enterdesk.com[\\w\\s./:]+?)\"");
+            List<String> ouput = getMatcher(html, "src=\"(https://up.enterdesk.com[\\w\\s./:]+?)\"");
             int index = (int) (Math.random() * ouput.size());
             String url = ouput.get(index);
             return url;
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
+        } catch (IndexOutOfBoundsException e){
+            StackTraceElement warning = e.getStackTrace()[1];
+            Log.w(String.format("网络错误 位置 [%s:%s]", warning.getFileName(), warning.getLineNumber()),"没有匹配到图片");
             return null;
         }
     }

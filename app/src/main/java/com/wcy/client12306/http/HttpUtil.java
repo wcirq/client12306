@@ -94,6 +94,7 @@ public class HttpUtil {
         HttpURLConnection httpURLConnection = null;
         try {
             URL url = new URL(urlPath);
+            String a = url.getHost();
             httpURLConnection = (HttpURLConnection) url.openConnection();
             if (headers!=null){
                 for (String key:headers.keySet()){
