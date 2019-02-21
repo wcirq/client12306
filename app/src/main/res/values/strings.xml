@@ -1,7 +1,10 @@
 <resources>
-    <string name="app_name">这不是12306</string>
+    <string name="app_name">12306</string>
     <string name="welcome_text">12306</string>
     <string name="skip">跳过 %1$d</string>
     <string name="userName">邮箱/手机号</string>
     <string name="password">密码</string>
+    <string name="login">登录</string>
+    <string name="refresh">刷新图片</string>
+    <string name="install">检查更新</string>
 </resources>

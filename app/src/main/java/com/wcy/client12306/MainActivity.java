@@ -1,8 +1,12 @@
 package com.wcy.client12306;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
+
+import com.wcy.client12306.http.HttpUtil;
+import com.wcy.client12306.util.MessageUtil;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -14,11 +18,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide(); // 继承的是AppCompatActivity时
+        }
         setContentView(R.layout.activity_main);
-
-        // Example of a call to a native method
+        Intent intent = getIntent();
+        HttpUtil networkUtil = (HttpUtil) intent.getSerializableExtra("httpUtil");
+        MessageUtil messageUtil = intent.getParcelableExtra("messageUtil");
         TextView tv = findViewById(R.id.sample_text);
         tv.setText(stringFromJNI());
+        tv.setText(String.format("%s\r\n\r\n%s", tv.getText(), messageUtil.getMessStr()));
     }
 
     /**

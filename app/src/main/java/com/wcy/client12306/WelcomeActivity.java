@@ -111,7 +111,6 @@ public class WelcomeActivity extends AppCompatActivity {
             public void onClick(View v) {
                 skipButton.setTextColor(Color.argb(50, 255,0,0));
                 handler.removeMessages(0); // 移除所有Messages
-                Log.d("哈哈","skipButton");
                 nextActivity();
             }
         });
@@ -132,7 +131,7 @@ public class WelcomeActivity extends AppCompatActivity {
                         InputStream inputStream = url.openStream();
                         bitmap = BitmapFactory.decodeStream(inputStream);
                         saveImage(bitmap);
-                        handler.sendEmptyMessage(1);
+//                        handler.sendEmptyMessage(1);
                     } catch (IOException e) {
                         Log.e("IOException", "连不上网络");
                         e.printStackTrace();

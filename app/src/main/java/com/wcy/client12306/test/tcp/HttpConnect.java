@@ -1,17 +1,25 @@
 package com.wcy.client12306.test.tcp;
 
+import android.util.Log;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,7 +38,7 @@ public class HttpConnect {
 
     public String buildRequest(String type, String HOST, String FILE, HashMap<String, String> heards, HashMap<String, String> data){
         String request;
-        String requestLine = String.format("%s %s HTTP/1.1", type, FILE);
+        String requestLine = String.format("%s %s HTTP/1.1\r\n", type, FILE);
         this.requestArray[0] = requestLine;
 
         StringBuilder requestHeards = new StringBuilder();
@@ -41,8 +49,19 @@ public class HttpConnect {
             requestHeards.delete(0,2);
             this.requestArray[1] = requestHeards.toString();
         }else {
+            StringBuffer datas = new StringBuffer();
+            try {
+                datas.append(URLEncoder.encode("name", "utf-8")).append("=").append(URLEncoder.encode("wcy", "utf-8")).append("&").append(URLEncoder.encode("age", "utf-8")).append("=").append(URLEncoder.encode("25", "utf-8")).append("");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
             this.requestArray[1] = "" +
-                    "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:64.0) Gecko/20100101 Firefox/64.0\r\n"
+                    "Accept: text/html, application/xhtml+xml, image/jxr, */*\r\n" +
+                    "Accept-Encoding: gzip, deflate\r\n" +
+                    "Content-Encoding: utf-8\r\n" +
+                    "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:64.0) Gecko/20100101 Firefox/64.0\r\n" +
+                    "Content-Length: " + datas.length() + "\r\n" +
+                    "Content-Type: application/x-www-form-urlencoded\r\n"
 //                    "Host: " + HOST + "\r\n"
             ;
         }
@@ -57,14 +76,21 @@ public class HttpConnect {
             requestData.delete(0,2);
             this.requestArray[3] = requestData.toString();
         } else {
-            this.requestArray[3] = "txtUserName=1400170226\r\n" +
-                    "TextBox2=qlz520";
-                               ;
+            try {
+                this.requestArray[3] = URLEncoder.encode("name", "utf-8") + "="
+                        + URLEncoder.encode("wcy", "utf-8") + "&"
+                        + URLEncoder.encode("age", "utf-8") + "="
+                        + URLEncoder.encode("25", "utf-8") + "\r\n";
+//                this.requestArray[3] = "name=wcy&age=25\r\n";
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            ;
         }
         if(type.equals("GET")){
-            request = String.format("%s\r\n%s\r\n", this.requestArray[0], this.requestArray[1]);
+            request = String.format("%s%s", this.requestArray[0], this.requestArray[1]);
         }else {
-            request = String.format("%s\r\n%s%s%s", this.requestArray[0], this.requestArray[1], this.requestArray[2],this.requestArray[3]);
+            request = String.format("%s%s%s%s", this.requestArray[0], this.requestArray[1], this.requestArray[2],this.requestArray[3]);
         }
 
         return request;
@@ -91,16 +117,31 @@ public class HttpConnect {
             System.out.println(request);
             inetAddress = new InetSocketAddress(IP, PORT);
             socket.connect(inetAddress, 1000);
-            OutputStream out = socket.getOutputStream();
-            out.write(request.getBytes());
-            out.write("\r\n".getBytes());
-            BufferedReader buffer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            String tem;
-            while(!(tem = buffer.readLine()).equals("")) {
-                System.out.println(tem);
+//            OutputStream out = socket.getOutputStream();
+//            out.write(request.getBytes());
+//            out.flush();
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+            out.write(request);
+            out.write("\r\n");
+            out.flush();
+
+//            BufferedReader buffer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//            String tem;
+//            while(!(tem = buffer.readLine()).equals("")) {
+//                System.out.println(tem);
+//            }
+            int len;
+            InputStream in = socket.getInputStream();
+            StringBuffer html = new StringBuffer();
+            byte []buf = new byte[1024];
+            while ((len=in.read(buf)) != -1){
+                html.append(new String(buf, 0, len,"utf-8"));
             }
+            System.out.println(html);
+
             out.close();
-            buffer.close();
+            in.close();
+//            buffer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }finally {
@@ -172,8 +213,8 @@ public class HttpConnect {
     public static void main(String []args){
         HttpConnect httpConnect = new HttpConnect();
 
-//        httpConnect.post("http://127.0.0.1:8000/hello", null, null);
+        httpConnect.post("http://127.0.0.1:8000/hello", null, null);
 
-        httpConnect.get("http://www.qq.com/", null);
+//        httpConnect.get("http://www.baidu.com/", null);
     }
 }
