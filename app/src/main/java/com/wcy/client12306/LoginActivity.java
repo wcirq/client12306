@@ -162,7 +162,7 @@ public class LoginActivity extends AppCompatActivity {
         try {
             FileInputStream fis = new FileInputStream(image_path);
             Bitmap bmp  = BitmapFactory.decodeStream(fis);
-            bmp = ImageUtil.getAlplaBitmap(bmp, 90);
+            bmp = ImageUtil.getAlplaBitmap(bmp, 6);
             BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bmp);
             linearLayout.setBackground(bitmapDrawable);
         } catch (FileNotFoundException e) {

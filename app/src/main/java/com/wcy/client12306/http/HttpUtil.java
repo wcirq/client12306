@@ -116,8 +116,8 @@ public class HttpUtil implements Serializable {
             if (paramsMap!=null){
                 params = getParams(paramsMap);
             }else {
-                // params = "";
-                params="username=18685134228&password=wcy206211&appid=otn";
+                 params = "";
+//                params="username=18685134228&password=wcy206211&appid=otn";
             }
             if (responseCookie!=null){
                 String request1 = responseCookie.get(0).split(";")[0];

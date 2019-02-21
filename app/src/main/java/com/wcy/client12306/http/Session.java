@@ -1,49 +1,61 @@
 package com.wcy.client12306.http;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.Log;
 
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Session {
-    private String sessionId = null;
-    private String cookie = null;
-    HttpURLConnection httpURLConnection = null;
+    private HashMap<String, HashMap<String, String>> COOKIES = null;
 
     public Session(){
 
     }
 
-    public Object get(String url, HashMap<String, String> headers) throws MalformedURLException {
-        httpURLConnection = new HttpURLConnection(new URL("")) {
-            @Override
-            public void disconnect() {
-
+    private HttpURLConnection dealCookie(HttpURLConnection httpURLConnection){
+        List<String> cookies = httpURLConnection.getHeaderFields().get("Set-Cookie");
+        for (String cookie:cookies){
+            String[] argses = cookie.split(";");
+            for (int i=0;i<argses.length;i++){
+                String args = argses[i];
+                int index = args.indexOf("=");
+                System.out.println("");
             }
+        }
+        return httpURLConnection;
+    }
 
-            @Override
-            public boolean usingProxy() {
-                return false;
+    private HttpURLConnection setRequestProperty(HttpURLConnection httpURLConnection, HashMap<String, String> headers) {
+        if (headers != null) {
+            for (String key : headers.keySet()) {
+                httpURLConnection.setRequestProperty(key, headers.get(key));
             }
+        } else {
+            httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
+        }
+        return httpURLConnection;
+    }
 
-            @Override
-            public void connect() throws IOException {
+    public Object get(String url, HashMap<String, String> headers) {
+        HttpURLConnection httpURLConnection=null;
+        try {
+            httpURLConnection = (HttpURLConnection) new URL(url).openConnection();
+            httpURLConnection = setRequestProperty(httpURLConnection, headers);
+            httpURLConnection = dealCookie(httpURLConnection);
 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if (httpURLConnection!=null){
+                httpURLConnection.disconnect();
             }
-        };
+        }
         return null;
     }
 
@@ -52,7 +64,9 @@ public class Session {
     }
 
     public static void main(String args[]){
-
+        String url = "https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand&0.6523880813900003";
+        Session session = new Session();
+        session.get(url,null);
     }
 
 }
