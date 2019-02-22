@@ -28,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.wcy.client12306.http.HttpUtil;
+import com.wcy.client12306.http.Session;
 import com.wcy.client12306.ui.SuperEditTextView;
 import com.wcy.client12306.util.ImageUtil;
 import com.wcy.client12306.util.MessageUtil;
@@ -54,7 +55,8 @@ public class LoginActivity extends AppCompatActivity {
     private LinearLayout linearLayoutImageCode;
     private int choose[] = new int[8];
     private JSONObject jsonObject = null;
-    HttpUtil networkUtil = new HttpUtil();
+//    HttpUtil networkUtil = new HttpUtil();
+    Session networkUtil = new Session();
     private File file = null;
     TextView message;
 
@@ -346,27 +348,33 @@ public class LoginActivity extends AppCompatActivity {
                     public void run() {
                         try{
                             jsonObject = (JSONObject) networkUtil.get(finalUrl, null);
-                            String loginUrl = "https://kyfw.12306.cn/passport/web/login";
-                            jsonObject = (JSONObject) networkUtil.post(loginUrl, null, paramsMap);
-                            try {
-                                if (jsonObject.getInt("result_code")==0){
-                                    MessageUtil messageUtil = new MessageUtil();
-                                    messageUtil.setMessStr(jsonObject.getString("uamtk"));
-                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                    intent.putExtra("httpUtil", networkUtil);
-                                    intent.putExtra("messageUtil", messageUtil);
-                                    startActivity(intent);
-                                }else {
-                                    if (jsonObject.getInt("result_code")==5){
-                                        //验证码校验失败
-                                        getCaptcha();
+                            if (jsonObject.getInt("result_code")==4){
+                                String loginUrl = "https://kyfw.12306.cn/passport/web/login";
+                                jsonObject = (JSONObject) networkUtil.post(loginUrl, null, paramsMap);
+                                try {
+                                    if (jsonObject.getInt("result_code")==0){
+                                        MessageUtil messageUtil = new MessageUtil();
+                                        messageUtil.setMessStr(jsonObject.getString("uamtk"));
+                                        Intent intent = new Intent(getApplicationContext(), DetailsActivity.class);
+                                        intent.putExtra("httpUtil", networkUtil);
+                                        intent.putExtra("messageUtil", messageUtil);
+                                        startActivity(intent);
+                                    }else {
+                                        if (jsonObject.getInt("result_code")==5){
+                                            //验证码校验失败
+                                            getCaptcha();
+                                        }
+                                        Log.d("jsonObject", jsonObject.toString());
+                                        handler.sendEmptyMessage(2);
                                     }
-                                    Log.d("jsonObject", jsonObject.toString());
-                                    handler.sendEmptyMessage(2);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                            }else {
+                                getCaptcha();
+                                handler.sendEmptyMessage(2);
                             }
+
                         }catch (ClassCastException e){
                             try {
                                 Thread.sleep(1000);
@@ -375,6 +383,13 @@ public class LoginActivity extends AppCompatActivity {
                             }
                             e.printStackTrace();
                             getCaptcha();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        } catch (NullPointerException e){
+                            e.printStackTrace();
+                            Looper.prepare();
+                            Toast.makeText(getApplicationContext(), "无法连接网络！", Toast.LENGTH_SHORT).show();
+                            Looper.loop();
                         }
                     }
                 }).start();
