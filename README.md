@@ -1,14 +1,6 @@
-String url2 = "https://kyfw.12306.cn/passport/captcha/captcha-check";
-data = {
-            "answer": ",".join(self.point),
-            "login_site": "E",
-            "rand": "sjrand"
-        }
-
-String url3 = "https://kyfw.12306.cn/passport/web/login";
-
-data = {
-        'username': username,
-        'password': password,
-        'appid': 'otn'
-    }
+##这是一个模拟登录12306的android应用
+>>正在完善中...
+>>>欢迎页
+![欢迎页](image/welcome.png)
+>>>登录页
+![登录页](image/login.png)
