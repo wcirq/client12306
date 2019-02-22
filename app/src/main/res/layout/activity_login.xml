@@ -52,7 +52,7 @@
         android:layout_gravity="center"
         android:inputType="textPassword"
         android:hint="@string/password"
-        android:text="wcy206211"
+        android:text=""
 
         app:linePosition="1"
         app:ic_left_click="@drawable/password_click"

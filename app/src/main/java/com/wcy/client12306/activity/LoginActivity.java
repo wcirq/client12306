@@ -28,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.wcy.client12306.R;
+import com.wcy.client12306.db.DBHelper;
 import com.wcy.client12306.http.HttpUtil;
 import com.wcy.client12306.http.Session;
 import com.wcy.client12306.ui.SuperEditTextView;
@@ -49,6 +50,7 @@ import java.util.Objects;
 
 
 public class LoginActivity extends AppCompatActivity {
+    DBHelper dbHelper;
     private MyHandler handler = null;
     private ImageView imageView;
     private ArrayList<Bitmap> bitmaps;
@@ -181,6 +183,14 @@ public class LoginActivity extends AppCompatActivity {
             getSupportActionBar().hide(); // 继承的是AppCompatActivity时
         }
         setContentView(R.layout.activity_login);
+        dbHelper = new DBHelper(getApplicationContext());
+        SuperEditTextView userName = findViewById(R.id.userName);
+        SuperEditTextView password = findViewById(R.id.password);
+        HashMap<String, String> result = dbHelper.find(1);
+        if (result!=null) {
+            userName.setText(result.get("name"));
+            password.setText(result.get("password"));
+        }
         loadBackground();
         message = findViewById(R.id.message);
         linearLayoutImageCode = findViewById(R.id.imageCode);
@@ -354,6 +364,7 @@ public class LoginActivity extends AppCompatActivity {
                                 jsonObject = (JSONObject) networkUtil.post(loginUrl, null, paramsMap);
                                 try {
                                     if (jsonObject.getInt("result_code")==0){
+                                        dbHelper.insert(paramsMap.get("username"), paramsMap.get("password"));
                                         MessageUtil messageUtil = new MessageUtil();
                                         messageUtil.setMessStr(jsonObject.getString("uamtk"));
                                         Intent intent = new Intent(getApplicationContext(), DetailsActivity.class);
