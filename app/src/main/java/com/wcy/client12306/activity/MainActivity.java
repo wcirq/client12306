@@ -1,4 +1,4 @@
-package com.wcy.client12306;
+package com.wcy.client12306.activity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.wcy.client12306.R;
 import com.wcy.client12306.http.HttpUtil;
 import com.wcy.client12306.http.Session;
 import com.wcy.client12306.ui.SuperEditTextView;

@@ -1,15 +1,14 @@
-package com.wcy.client12306;
+package com.wcy.client12306.activity;
 
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
+import com.wcy.client12306.R;
 import com.wcy.client12306.http.Session;
 import com.wcy.client12306.util.MessageUtil;
 

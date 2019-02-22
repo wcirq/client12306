@@ -1,6 +1,5 @@
-package com.wcy.client12306;
+package com.wcy.client12306.activity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -14,13 +13,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.wcy.client12306.R;
 import com.wcy.client12306.http.Crawler;
 
 import java.io.File;
@@ -145,7 +143,6 @@ public class WelcomeActivity extends AppCompatActivity {
 
             @Override
             public void run() {
-                Log.d("哈哈","postDelayed");
                 nextActivity();
             }
         }, waiting_time*1000);

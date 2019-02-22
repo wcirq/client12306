@@ -1,4 +1,4 @@
-package com.wcy.client12306;
+package com.wcy.client12306.activity;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -27,6 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.wcy.client12306.R;
 import com.wcy.client12306.http.HttpUtil;
 import com.wcy.client12306.http.Session;
 import com.wcy.client12306.ui.SuperEditTextView;
