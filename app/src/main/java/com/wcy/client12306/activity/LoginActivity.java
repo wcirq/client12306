@@ -364,6 +364,7 @@ public class LoginActivity extends AppCompatActivity {
                                 jsonObject = (JSONObject) networkUtil.post(loginUrl, null, paramsMap);
                                 try {
                                     if (jsonObject.getInt("result_code")==0){
+                                        dbHelper.delete(1);
                                         dbHelper.insert(paramsMap.get("username"), paramsMap.get("password"));
                                         MessageUtil messageUtil = new MessageUtil();
                                         messageUtil.setMessStr(jsonObject.getString("uamtk"));

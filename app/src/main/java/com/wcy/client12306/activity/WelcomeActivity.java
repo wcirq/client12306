@@ -122,7 +122,7 @@ public class WelcomeActivity extends AppCompatActivity {
                     handler.sendEmptyMessage(2);
                 }
                 Crawler crawler = new Crawler();
-                String imgUrl = crawler.getUrl();
+                String imgUrl = crawler.getBaiduImageUrl();
                 if (imgUrl!=null){
                     try {
                         URL url = new URL(imgUrl);

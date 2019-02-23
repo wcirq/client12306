@@ -11,6 +11,7 @@ import android.widget.ListView;
 import com.wcy.client12306.R;
 import com.wcy.client12306.http.Session;
 import com.wcy.client12306.util.MessageUtil;
+import com.wcy.client12306.util.SystemUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -111,6 +112,8 @@ public class DetailsActivity extends AppCompatActivity {
                         String passenger_id_no = data.getString("passenger_id_no");
                         info.add(String.format("联系人: %s  %s  %s", passenger_name, sex_name, passenger_id_no));
                     }
+                    info.add(SystemUtil.getVersionCode(getApplicationContext())+"");
+                    info.add(SystemUtil.getVersionName(getApplicationContext()));
                     items = info.toArray(new String[info.size()]);
                     handler.sendEmptyMessage(1);
                 } catch (JSONException e) {
