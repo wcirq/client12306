@@ -468,6 +468,9 @@ public class LoginActivity extends AppCompatActivity {
                     getCaptcha();
                 }
             }).start();
+        }else if (view.getId() == R.id.setting) {
+            Intent intent = new Intent(LoginActivity.this, SettingActivity.class);
+            startActivity(intent);
         }
 
     }

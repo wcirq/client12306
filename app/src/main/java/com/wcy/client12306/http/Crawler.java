@@ -48,7 +48,7 @@ public class Crawler {
 
     public String getBaiduImageUrl(){
         String imageUrl = "http://image.baidu.com/search/flip?tn=baiduimage&ie=utf-8&word=%s&pn=%d&gsm=50&ct=&ic=0&lm=-1&width=0&height=0";
-        imageUrl = String.format(imageUrl, "手机壁纸美女", (int)Math.random()*100);
+        imageUrl = String.format(imageUrl, "手机壁纸", (int)Math.random()*100);
         String html = (String) session.get(imageUrl,null);
         List<String> ouput = getMatcher(html, "\"objURL\":\"(.*?)\"");
         int index = (int) (Math.random() * ouput.size());
