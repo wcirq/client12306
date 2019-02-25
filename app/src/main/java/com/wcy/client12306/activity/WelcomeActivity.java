@@ -161,6 +161,7 @@ public class WelcomeActivity extends AppCompatActivity {
         }catch (Exception e){
             e.printStackTrace();
         }
+
     }
 
     private void nextActivity(){

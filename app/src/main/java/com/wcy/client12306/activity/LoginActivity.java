@@ -15,11 +15,17 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
 import android.support.v4.content.FileProvider;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
@@ -41,6 +47,10 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.net.UnknownHostException;
@@ -49,7 +59,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity{
     DBHelper dbHelper;
     private MyHandler handler = null;
     private ImageView imageView;
@@ -58,10 +68,11 @@ public class LoginActivity extends AppCompatActivity {
     private LinearLayout linearLayoutImageCode;
     private int choose[] = new int[8];
     private JSONObject jsonObject = null;
-//    HttpUtil networkUtil = new HttpUtil();
-    Session networkUtil = new Session();
+//    HttpUtil session = new HttpUtil();
+    Session session = null;
     private File file = null;
     TextView message;
+    String userInfoPath;
 
     public LoginActivity() {
     }
@@ -81,6 +92,7 @@ public class LoginActivity extends AppCompatActivity {
                     activity.choose[i]=0;
                 }
                 activity.linearLayoutImageCode.setVisibility(View.VISIBLE);
+                int imageViews[] = {R.id.question, R.id.answer1, R.id.answer2, R.id.answer3, R.id.answer4, R.id.answer5, R.id.answer6, R.id.answer7, R.id.answer8};
                 int i = 0;
                 for (Bitmap bmp : activity.bitmaps) {
                     switch (i) {
@@ -88,53 +100,11 @@ public class LoginActivity extends AppCompatActivity {
                             ImageView imageView0 = activity.findViewById(R.id.question);
                             imageView0.setImageBitmap(bmp);
                             break;
-                        case 1:
-                            ImageView imageView1 = activity.findViewById(R.id.answer1);
-                            imageView1.setImageBitmap(bmp);
-                            imageView1.setPadding(0, 0, 0, 0);
-                            imageView1.setAlpha(1f);
-                            break;
-                        case 2:
-                            ImageView imageView2 = activity.findViewById(R.id.answer2);
-                            imageView2.setImageBitmap(bmp);
-                            imageView2.setPadding(0, 0, 0, 0);
-                            imageView2.setAlpha(1f);
-                            break;
-                        case 3:
-                            ImageView imageView3 = activity.findViewById(R.id.answer3);
-                            imageView3.setImageBitmap(bmp);
-                            imageView3.setPadding(0, 0, 0, 0);
-                            imageView3.setAlpha(1f);
-                            break;
-                        case 4:
-                            ImageView imageView4 = activity.findViewById(R.id.answer4);
-                            imageView4.setImageBitmap(bmp);
-                            imageView4.setPadding(0, 0, 0, 0);
-                            imageView4.setAlpha(1f);
-                            break;
-                        case 5:
-                            ImageView imageView5 = activity.findViewById(R.id.answer5);
-                            imageView5.setImageBitmap(bmp);
-                            imageView5.setPadding(0, 0, 0, 0);
-                            imageView5.setAlpha(1f);
-                            break;
-                        case 6:
-                            ImageView imageView6 = activity.findViewById(R.id.answer6);
-                            imageView6.setImageBitmap(bmp);
-                            imageView6.setPadding(0, 0, 0, 0);
-                            imageView6.setAlpha(1f);
-                            break;
-                        case 7:
-                            ImageView imageView7 = activity.findViewById(R.id.answer7);
-                            imageView7.setImageBitmap(bmp);
-                            imageView7.setPadding(0, 0, 0, 0);
-                            imageView7.setAlpha(1f);
-                            break;
-                        case 8:
-                            ImageView imageView8 = activity.findViewById(R.id.answer8);
-                            imageView8.setImageBitmap(bmp);
-                            imageView8.setPadding(0, 0, 0, 0);
-                            imageView8.setAlpha(1f);
+                        default:
+                            ImageView imageView = activity.findViewById(imageViews[i]);
+                            imageView.setImageBitmap(bmp);
+                            imageView.setPadding(0, 0, 0, 0);
+                            imageView.setAlpha(1f);
                             break;
                     }
                     i++;
@@ -182,28 +152,54 @@ public class LoginActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide(); // 继承的是AppCompatActivity时
         }
-        setContentView(R.layout.activity_login);
-        dbHelper = new DBHelper(getApplicationContext());
-        SuperEditTextView userName = findViewById(R.id.userName);
-        SuperEditTextView password = findViewById(R.id.password);
-        HashMap<String, String> result = dbHelper.find(1);
-        if (result!=null) {
-            userName.setText(result.get("name"));
-            password.setText(result.get("password"));
-        }
-        loadBackground();
-        message = findViewById(R.id.message);
-        linearLayoutImageCode = findViewById(R.id.imageCode);
-        handler = new MyHandler(LoginActivity.this);
-        initMenu();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                getCaptcha();
-            }
-        }).start();
+        setContentView(R.layout.activity_home);
+        userInfoPath = getFilesDir().getAbsolutePath()+File.separator+"userInfo.ser";
+        boolean exists = new File(userInfoPath).exists();
+        if (exists){
+            load();
+            MessageUtil messageUtil = new MessageUtil();
+            messageUtil.setMessStr("");
+            Intent intent = new Intent(getApplicationContext(), DetailsActivity.class);
+            intent.putExtra("session", session);
+            intent.putExtra("messageUtil", messageUtil);
+            startActivity(intent);
+        }else {
+            session = new Session();
+            LayoutInflater inflater = getLayoutInflater();
+            View view = inflater.inflate(R.layout.layout_login, null);
+            DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+            drawerLayout.addView(view,0);
 
+            dbHelper = new DBHelper(getApplicationContext());
+            SuperEditTextView userName = findViewById(R.id.userName);
+            SuperEditTextView password = findViewById(R.id.password);
+            HashMap<String, String> result = dbHelper.find(1);
+            if (result!=null) {
+                userName.setText(result.get("name"));
+                password.setText(result.get("password"));
+            }
+            loadBackground();
+            message = findViewById(R.id.message);
+            linearLayoutImageCode = findViewById(R.id.imageCode);
+            handler = new MyHandler(LoginActivity.this);
+            initMenu();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    getCaptcha();
+                }
+            }).start();
+        }
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener(){
+
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                return true;
+            }
+        });
     }
+
 
     /**
      * 获取验证码
@@ -211,7 +207,7 @@ public class LoginActivity extends AppCompatActivity {
     private void getCaptcha() {
         String url = "https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand&0.6523880813900003";
         try {
-            bitmap = (Bitmap) networkUtil.get(url, null);
+            bitmap = (Bitmap) session.get(url, null);
             if (bitmap != null) {
                 bitmaps = new ArrayList<Bitmap>();
                 for (int i = 0; i < 9; i++) {
@@ -329,6 +325,35 @@ public class LoginActivity extends AppCompatActivity {
         }.start();
     }
 
+    public void dump(){
+        FileOutputStream fs = null;
+        ObjectOutputStream os = null;
+        try {
+            fs = new FileOutputStream(userInfoPath);
+            os = new ObjectOutputStream(fs);
+            os.writeObject(session);
+            os.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void load(){
+        File file = new File(userInfoPath);
+        ObjectInputStream ois = null;
+        try {
+            ois = new ObjectInputStream(new FileInputStream(file));
+            session = (Session) ois.readObject();
+            ois.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void onClick(View view) {
         if (view.getId() == R.id.login) {
             message.setText("");
@@ -358,18 +383,19 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try{
-                            jsonObject = (JSONObject) networkUtil.get(finalUrl, null);
+                            jsonObject = (JSONObject) session.get(finalUrl, null);
                             if (jsonObject.getInt("result_code")==4){
                                 String loginUrl = "https://kyfw.12306.cn/passport/web/login";
-                                jsonObject = (JSONObject) networkUtil.post(loginUrl, null, paramsMap);
+                                jsonObject = (JSONObject) session.post(loginUrl, null, paramsMap);
                                 try {
                                     if (jsonObject.getInt("result_code")==0){
                                         dbHelper.delete(1);
                                         dbHelper.insert(paramsMap.get("username"), paramsMap.get("password"));
+                                        dump();
                                         MessageUtil messageUtil = new MessageUtil();
                                         messageUtil.setMessStr(jsonObject.getString("uamtk"));
                                         Intent intent = new Intent(getApplicationContext(), DetailsActivity.class);
-                                        intent.putExtra("httpUtil", networkUtil);
+                                        intent.putExtra("session", session);
                                         intent.putExtra("messageUtil", messageUtil);
                                         startActivity(intent);
                                     }else {
@@ -475,16 +501,16 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    public void changeImageViewAlpha(int viewId, int id) {
-        ImageView imageView = findViewById(viewId);
+    public void changeImageViewAlpha(int[] viewId) {
+        ImageView imageView = findViewById(viewId[0]);
         float alpha = imageView.getAlpha();
         if (alpha == 0.5) {
             alpha = 1f;
-            choose[id] = 0;
+            choose[viewId[1]] = 0;
             imageView.setPadding(0, 0, 0, 0);
         } else {
             alpha = 0.5f;
-            choose[id] = 1;
+            choose[viewId[1]] = 1;
             imageView.setPadding(10, 10, 10, 10);
         }
         imageView.setAlpha(alpha);
@@ -492,62 +518,22 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void initMenu() {
-        int viewIds[] = {R.id.answer1, R.id.answer2, R.id.answer3, R.id.answer4, R.id.answer5, R.id.answer6, R.id.answer7, R.id.answer8};
-        menuItemSelected(viewIds[0], new MenuSelectedListener() {
-            @Override
-            public void onMenuSelected(int viewId) {
-                changeImageViewAlpha(viewId, 0);
-            }
-        });
-        menuItemSelected(viewIds[1], new MenuSelectedListener() {
-            @Override
-            public void onMenuSelected(int viewId) {
-                changeImageViewAlpha(viewId, 1);
-            }
-        });
-        menuItemSelected(viewIds[2], new MenuSelectedListener() {
-            @Override
-            public void onMenuSelected(int viewId) {
-                changeImageViewAlpha(viewId, 2);
-            }
-        });
-        menuItemSelected(viewIds[3], new MenuSelectedListener() {
-            @Override
-            public void onMenuSelected(int viewId) {
-                changeImageViewAlpha(viewId, 3);
-            }
-        });
-        menuItemSelected(viewIds[4], new MenuSelectedListener() {
-            @Override
-            public void onMenuSelected(int viewId) {
-                changeImageViewAlpha(viewId, 4);
-            }
-        });
-        menuItemSelected(viewIds[5], new MenuSelectedListener() {
-            @Override
-            public void onMenuSelected(int viewId) {
-                changeImageViewAlpha(viewId, 5);
-            }
-        });
-        menuItemSelected(viewIds[6], new MenuSelectedListener() {
-            @Override
-            public void onMenuSelected(int viewId) {
-                changeImageViewAlpha(viewId, 6);
-            }
-        });
-        menuItemSelected(viewIds[7], new MenuSelectedListener() {
-            @Override
-            public void onMenuSelected(int viewId) {
-                changeImageViewAlpha(viewId, 7);
-            }
-        });
+        int viewIds[][] = {{R.id.answer1, 0}, {R.id.answer2, 1}, {R.id.answer3, 2}, {R.id.answer4, 3}, {R.id.answer5, 4}, {R.id.answer6, 5}, {R.id.answer7, 6}, {R.id.answer8, 7}};
+        for (int i=0;i<viewIds.length;i++){
+            menuItemSelected(viewIds[i], new MenuSelectedListener() {
+                @Override
+                public void onMenuSelected(int[] viewId) {
+                    changeImageViewAlpha(viewId);
+                }
+            });
+        }
     }
 
     /**
      * 选中底部 Menu 菜单项
      */
-    private void menuItemSelected(final int viewId, final MenuSelectedListener listener) {
-        findViewById(viewId).setOnClickListener(new View.OnClickListener() {
+    private void menuItemSelected(final int viewId[], final MenuSelectedListener listener) {
+        findViewById(viewId[0]).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 listener.onMenuSelected(viewId);
@@ -557,7 +543,20 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     interface MenuSelectedListener {
-        void onMenuSelected(int viewId);
+        void onMenuSelected(int [] viewId);
+    }
+
+    @Override
+    public void onBackPressed() {
+        /**
+         * 监听back键 防止直接结束当前activity
+         */
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override

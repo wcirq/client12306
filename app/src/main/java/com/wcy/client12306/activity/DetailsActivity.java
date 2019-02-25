@@ -24,7 +24,7 @@ import java.util.HashMap;
 public class DetailsActivity extends AppCompatActivity {
     Handler handler;
     String items[]=null;
-    private Session networkUtil;
+    private Session session;
     private ListView listView;
     private ArrayAdapter<String> arrayAdapter;
     JSONObject jsonObject;
@@ -59,7 +59,7 @@ public class DetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_details);
         handler = new DetailsActivity.MyHandler(DetailsActivity.this);
         Intent intent = getIntent();
-        networkUtil = (Session) intent.getSerializableExtra("httpUtil");
+        session = (Session) intent.getSerializableExtra("session");
         final MessageUtil messageUtil = intent.getParcelableExtra("messageUtil");
         listView = findViewById(R.id.list_item);
 
@@ -70,21 +70,21 @@ public class DetailsActivity extends AppCompatActivity {
                 HashMap<String, String> paramsMap = new HashMap<>();
                 paramsMap.put("appid", "otn");
                 String url = "https://kyfw.12306.cn/passport/web/auth/uamtk";
-                JSONObject jsonObject0 = (JSONObject) networkUtil.post(url,null, paramsMap);
+                JSONObject jsonObject0 = (JSONObject) session.post(url,null, paramsMap);
 
                 try {
                     HashMap<String, String> paramsMap1 = new HashMap<>();
                     paramsMap1.put("tk", jsonObject0.getString("newapptk"));
-                    JSONObject jsonObject1 = (JSONObject) networkUtil.post("https://kyfw.12306.cn/otn/uamauthclient",null, paramsMap1);
-                    JSONObject jsonObject2 = (JSONObject) networkUtil.post("https://kyfw.12306.cn/otn/index/initMy12306Api",null, null);
-                    JSONObject jsonObject3 = (JSONObject) networkUtil.post("https://kyfw.12306.cn/otn/login/conf",null, null);
-                    jsonObject = (JSONObject) networkUtil.post("https://kyfw.12306.cn/otn/modifyUser/initQueryUserInfoApi",null, null);
-                    JSONObject jsonObject4 = (JSONObject) networkUtil.post("https://kyfw.12306.cn/otn/login/conf",null, null);
+                    JSONObject jsonObject1 = (JSONObject) session.post("https://kyfw.12306.cn/otn/uamauthclient",null, paramsMap1);
+                    JSONObject jsonObject2 = (JSONObject) session.post("https://kyfw.12306.cn/otn/index/initMy12306Api",null, null);
+                    JSONObject jsonObject3 = (JSONObject) session.post("https://kyfw.12306.cn/otn/login/conf",null, null);
+                    jsonObject = (JSONObject) session.post("https://kyfw.12306.cn/otn/modifyUser/initQueryUserInfoApi",null, null);
+                    JSONObject jsonObject4 = (JSONObject) session.post("https://kyfw.12306.cn/otn/login/conf",null, null);
 
                     HashMap<String, String> paramsMap2 = new HashMap<>();
                     paramsMap2.put("pageIndex", "1");
                     paramsMap2.put("pageSize", "10");
-                    JSONObject jsonObject5 = (JSONObject) networkUtil.post("https://kyfw.12306.cn/otn/passengers/query",null, paramsMap2);
+                    JSONObject jsonObject5 = (JSONObject) session.post("https://kyfw.12306.cn/otn/passengers/query",null, paramsMap2);
                     ArrayList<String> info = new ArrayList<>();
                     info.add("姓名: "+jsonObject.getJSONObject("data").getJSONObject("userDTO").getJSONObject("loginUserDTO").getString("name"));
                     info.add("用户名: "+jsonObject.getJSONObject("data").getJSONObject("userDTO").getJSONObject("loginUserDTO").getString("user_name"));
