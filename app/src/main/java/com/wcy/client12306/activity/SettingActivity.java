@@ -42,17 +42,19 @@ public class SettingActivity extends AppCompatActivity implements NavigationView
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         int id = menuItem.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.nav_buy_ticket) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.nav_order) {
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_data) {
 
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.nav_log_back_in) {
 
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_setting) {
 
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.nav_update) {
+
+        } else if (id == R.id.nav_update) {
 
         }
 

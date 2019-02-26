@@ -86,7 +86,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 public void run() {
                     waiting_time--;
                     skipButton.setText(String.format(getResources().getString(R.string.skip), waiting_time));
-                    if (waiting_time < 0) {
+                    if (waiting_time < 1) {
                         timer.cancel();
                         skipButton.setVisibility(View.GONE);//倒计时到0隐藏字体
                     }

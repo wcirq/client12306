@@ -68,7 +68,6 @@ public class LoginActivity extends AppCompatActivity{
     private int choose[] = new int[8];
     private JSONObject jsonObject = null;
     Session session = null;
-    private File file = null;
     TextView message;
     String userInfoPath;
 
@@ -120,10 +119,6 @@ public class LoginActivity extends AppCompatActivity{
                     }
                 } else {
                     activity.message.setText("");
-                }
-            }else if (msg.what==3){
-                if (activity.file!=null){
-                    activity.installApk(null);
                 }
             }
         }
@@ -215,87 +210,6 @@ public class LoginActivity extends AppCompatActivity{
             }
             getCaptcha();
         }
-    }
-
-    protected String getMIMEType(File file) {
-        String type = "";
-        String fileName = file.getName();
-        String var3 = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).toLowerCase();
-        type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(var3);
-        return type;
-    }
-
-    protected void installApk(@Nullable File file) {
-        if (file==null){
-            file = this.file;
-        }
-        Intent intent = new Intent();
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setAction(Intent.ACTION_VIEW);
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N){
-            Uri uriForFile = FileProvider.getUriForFile(getApplicationContext(), getApplicationContext().getPackageName() + ".provider", file);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            String type = getApplicationContext().getContentResolver().getType(uriForFile);
-            // String type = getMIMEType(file);
-            intent.setDataAndType(uriForFile, type);
-        }else{
-            intent.setDataAndType(Uri.fromFile(file), getMIMEType(file));
-        }
-        startActivity(intent);
-    }
-
-    protected void loadNewVersionProgress() {
-//        final String uri = "http://www.apk.anzhi.com/data3/apk/201703/14/4636d7fce23c9460587d602b9dc20714_88002100.apk";
-        final String uri = "http://imtt.dd.qq.com/16891/08D63F6E91D1713194CBC3929B0BB7CC.apk";
-//        final String uri = "http://dlied5.myapp.com/myapp/1104466820/sgame/10006654_com.tencent.tmgp.sgame_u180_1.43.1.15_ca5461.apk";
-        final String path = getFilesDir().getAbsolutePath()+File.separator+"updata.apk";
-        final ProgressDialog pd;    //进度条对话框
-        pd = new ProgressDialog(this);
-        pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        pd.setMessage("正在下载更新");
-        pd.show();
-        //启动子线程下载任务
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    pd.setCancelable(false);
-                    file = HttpUtil.getFileFromServer(uri, pd, path);
-                    sleep(500);
-                    Looper.prepare();
-                    Toast.makeText(getApplicationContext(), "请安装更新！", Toast.LENGTH_SHORT).show();
-                    pd.dismiss(); //结束掉进度条对话框
-                    handler.sendEmptyMessage(3);
-//                    installApk(file);
-                    Looper.loop();
-                } catch (UnknownHostException e) {
-                    //下载apk失败
-                    e.printStackTrace();
-                    Looper.prepare();
-                    pd.dismiss(); //结束掉进度条对话框
-                    Toast.makeText(getApplicationContext(), "无法连接网络！", Toast.LENGTH_SHORT).show();
-                    Looper.loop();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    Looper.prepare();
-                    pd.dismiss();
-                    Toast.makeText(getApplicationContext(), "下载失败！", Toast.LENGTH_SHORT).show();
-                    Looper.loop();
-                }catch (FileNotFoundException e){
-                    e.printStackTrace();
-                    Looper.prepare();
-                    pd.dismiss();
-                    Toast.makeText(getApplicationContext(), "下载失败！无法找到文件！", Toast.LENGTH_SHORT).show();
-                    Looper.loop();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Looper.prepare();
-                    pd.dismiss();
-                    Toast.makeText(getApplicationContext(), "下载失败！", Toast.LENGTH_SHORT).show();
-                    Looper.loop();
-                }
-            }
-        }.start();
     }
 
     public void dump(){
@@ -396,57 +310,7 @@ public class LoginActivity extends AppCompatActivity{
                 Toast.makeText(getApplicationContext(), "请选择图片！", Toast.LENGTH_SHORT).show();
             }
         } else if (view.getId() == R.id.install) {
-            TextView message = new TextView(this);
-            message.setText("发现新版本！请及时更新");
-            message.setPadding(10, 10, 10, 10);
-            message.setGravity(Gravity.CENTER);
-            message.setTextColor(getResources().getColor(R.color.textColor));
-            message.setTextSize(18);
 
-            // 这里的属性可以一直设置，因为每次设置后返回的是一个builder对象
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            // 设置提示框的标题
-            builder.setTitle("版本升级").
-//                    setCustomTitle(message).
-                    // 设置提示框的图标
-                    setIcon(R.mipmap.up).
-                    // 通过自定义View设置要显示的信息
-                    setView(message).
-                    // 设置要显示的信息
-//                    setMessage("发现新版本！请及时更新").
-                    // 设置确定按钮
-                    setPositiveButton("升级", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            //Toast.makeText(MainActivity.this, "选择确定哦", 0).show();
-                            loadNewVersionProgress();//下载最新的版本程序
-                        }
-                    }).
-                    // 设置取消按钮,null是什么都不做，并关闭对话框
-                    setNegativeButton("取消", null).
-                    setNeutralButton("忽略",null);
-
-            // 生产对话框
-            AlertDialog alertDialog = builder.create();
-            // 显示对话框
-            alertDialog.show();
-            // 通过反射机制修改Message(必须 setMessage(), 不能 setView())
-            try {
-                Field mAlert = AlertDialog.class.getDeclaredField("mAlert");
-                mAlert.setAccessible(true);
-                Object mAlertController = mAlert.get(alertDialog);
-                Field mMessage = mAlertController.getClass().getDeclaredField("mMessageView");
-                mMessage.setAccessible(true);
-                TextView mMessageView = (TextView) mMessage.get(mAlertController);
-                mMessageView.setTextColor(Color.BLUE);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.colorPrimary));
-            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextSize(20);
-            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-            alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.GRAY);
-            alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextSize(16);
         } else if (view.getId() == R.id.refresh) {
             new Thread(new Runnable() {
                 @Override
@@ -504,19 +368,6 @@ public class LoginActivity extends AppCompatActivity{
 
     interface MenuSelectedListener {
         void onMenuSelected(int [] viewId);
-    }
-
-    @Override
-    public void onBackPressed() {
-        /**
-         * 监听back键 防止直接结束当前activity
-         */
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
     }
 
     @Override
