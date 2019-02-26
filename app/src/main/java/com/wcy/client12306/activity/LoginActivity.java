@@ -54,7 +54,9 @@ import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -68,7 +70,6 @@ public class LoginActivity extends AppCompatActivity{
     private LinearLayout linearLayoutImageCode;
     private int choose[] = new int[8];
     private JSONObject jsonObject = null;
-//    HttpUtil session = new HttpUtil();
     Session session = null;
     private File file = null;
     TextView message;
@@ -155,41 +156,44 @@ public class LoginActivity extends AppCompatActivity{
         setContentView(R.layout.activity_home);
         userInfoPath = getFilesDir().getAbsolutePath()+File.separator+"userInfo.ser";
         boolean exists = new File(userInfoPath).exists();
-        if (exists){
+        if (exists) {
             load();
-            MessageUtil messageUtil = new MessageUtil();
-            messageUtil.setMessStr("");
-            Intent intent = new Intent(getApplicationContext(), DetailsActivity.class);
-            intent.putExtra("session", session);
-            intent.putExtra("messageUtil", messageUtil);
-            startActivity(intent);
-        }else {
-            session = new Session();
-            LayoutInflater inflater = getLayoutInflater();
-            View view = inflater.inflate(R.layout.layout_login, null);
-            DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
-            drawerLayout.addView(view,0);
-
-            dbHelper = new DBHelper(getApplicationContext());
-            SuperEditTextView userName = findViewById(R.id.userName);
-            SuperEditTextView password = findViewById(R.id.password);
-            HashMap<String, String> result = dbHelper.find(1);
-            if (result!=null) {
-                userName.setText(result.get("name"));
-                password.setText(result.get("password"));
+            boolean isSuccessful = check_user();
+            if (isSuccessful) {
+                MessageUtil messageUtil = new MessageUtil();
+                messageUtil.setMessStr("");
+                Intent intent = new Intent(getApplicationContext(), DetailsActivity.class);
+                intent.putExtra("session", session);
+                intent.putExtra("messageUtil", messageUtil);
+                startActivity(intent);
             }
-            loadBackground();
-            message = findViewById(R.id.message);
-            linearLayoutImageCode = findViewById(R.id.imageCode);
-            handler = new MyHandler(LoginActivity.this);
-            initMenu();
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    getCaptcha();
-                }
-            }).start();
         }
+        session = new Session();
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.layout_login, null);
+        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+        drawerLayout.addView(view,0);
+
+        dbHelper = new DBHelper(getApplicationContext());
+        SuperEditTextView userName = findViewById(R.id.userName);
+        SuperEditTextView password = findViewById(R.id.password);
+        HashMap<String, String> result = dbHelper.find(1);
+        if (result!=null) {
+            userName.setText(result.get("name"));
+            password.setText(result.get("password"));
+        }
+        loadBackground();
+        message = findViewById(R.id.message);
+        linearLayoutImageCode = findViewById(R.id.imageCode);
+        handler = new MyHandler(LoginActivity.this);
+        initMenu();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                getCaptcha();
+            }
+        }).start();
+
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener(){
 
@@ -246,7 +250,6 @@ public class LoginActivity extends AppCompatActivity{
     protected String getMIMEType(File file) {
         String type = "";
         String fileName = file.getName();
-        int a = fileName.lastIndexOf(".");
         String var3 = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).toLowerCase();
         type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(var3);
         return type;
@@ -340,6 +343,37 @@ public class LoginActivity extends AppCompatActivity{
         }
     }
 
+    public boolean check_user(){
+        if (session!=null){
+            final JSONObject[] result = new JSONObject[1];
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    String url = "https://kyfw.12306.cn/passport/web/auth/uamtk";
+                    HashMap<String, String> paramsMap = new HashMap<>();
+                    paramsMap.put("appid", "otn");
+                    result[0] = (JSONObject) session.post(url,null,paramsMap);
+                }
+            });
+            thread.start();
+            try {
+                thread.join(3000);
+                if (result[0]!=null){
+                    if (result[0].getInt("result_code")==0){
+                        return true;
+                    }
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return false;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+
     public void load(){
         File file = new File(userInfoPath);
         ObjectInputStream ois = null;
@@ -347,9 +381,11 @@ public class LoginActivity extends AppCompatActivity{
             ois = new ObjectInputStream(new FileInputStream(file));
             session = (Session) ois.readObject();
             ois.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
