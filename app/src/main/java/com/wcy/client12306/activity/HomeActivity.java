@@ -3,10 +3,18 @@ package com.wcy.client12306.activity;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.wcy.client12306.R;
 import com.wcy.client12306.http.Session;
@@ -21,27 +29,36 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class DetailsActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity {
     Handler handler;
     String items[]=null;
-    private Session session;
-    private ListView listView;
-    private ArrayAdapter<String> arrayAdapter;
-    JSONObject jsonObject;
+    Session session;
+    ListView listView;
+    ArrayAdapter<String> arrayAdapter;
+    JSONObject jsonObject=null;
+    TextView userName, infoTextView;
 
     private static class MyHandler extends Handler {
-        private final WeakReference<DetailsActivity> mTarget;
+        private final WeakReference<HomeActivity> mTarget;
 
-        MyHandler(DetailsActivity target) {
+        MyHandler(HomeActivity target) {
             mTarget = new WeakReference<>(target);
         }
 
         @Override
         public void handleMessage(Message msg) {
-            DetailsActivity activity = mTarget.get();
+            HomeActivity activity = mTarget.get();
             if (msg.what == 1) {
                 activity.arrayAdapter = new ArrayAdapter<String>(activity, android.R.layout.simple_list_item_1, activity.items);
                 activity.listView.setAdapter(activity.arrayAdapter);
+                try {
+                    if (activity.jsonObject!=null&&activity.userName!=null){
+                        activity.userName.setText(activity.jsonObject.getJSONObject("data").getJSONObject("userDTO").getJSONObject("loginUserDTO").getString("name"));
+                        activity.infoTextView.setText(activity.jsonObject.getJSONObject("data").getJSONObject("userDTO").getString("email"));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             } else if (msg.what == 2) {
 
             }else if (msg.what==3){
@@ -53,16 +70,24 @@ public class DetailsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide(); // 继承的是AppCompatActivity时
-        }
-        setContentView(R.layout.activity_details);
-        handler = new DetailsActivity.MyHandler(DetailsActivity.this);
+        setContentView(R.layout.activity_home);
+
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.layout_details, null);
+        LinearLayout drawerLayout = findViewById(R.id.content);
+        drawerLayout.addView(view,0);
+
+        NavigationView navigationView = findViewById(R.id.navigation_view);
+        View headView=navigationView.inflateHeaderView(R.layout.nav_header_setting);
+        userName = headView.findViewById(R.id.user_name);
+        infoTextView = headView.findViewById(R.id.info_text_view);
+
         Intent intent = getIntent();
         session = (Session) intent.getSerializableExtra("session");
         final MessageUtil messageUtil = intent.getParcelableExtra("messageUtil");
         listView = findViewById(R.id.list_item);
 
+        handler = new MyHandler(HomeActivity.this);
 
         new Thread(new Runnable() {
             @Override
@@ -121,5 +146,13 @@ public class DetailsActivity extends AppCompatActivity {
                 }
             }
         }).start();
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener(){
+
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                return true;
+            }
+        });
     }
 }

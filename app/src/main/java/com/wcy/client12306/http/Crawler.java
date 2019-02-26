@@ -46,9 +46,13 @@ public class Crawler {
         String imageUrl = "http://image.baidu.com/search/flip?tn=baiduimage&ie=utf-8&word=%s&pn=%d&gsm=50&ct=&ic=0&lm=-1&width=0&height=0";
         imageUrl = String.format(imageUrl, "手机壁纸美女", (int)Math.random()*100);
         String html = (String) session.get(imageUrl,null);
-        List<String> ouput = getMatcher(html, "\"objURL\":\"(.*?)\"");
-        int index = (int) (Math.random() * ouput.size());
-        String url = ouput.get(index);
-        return url;
+        if (html==null){
+            return null;
+        }else {
+            List<String> ouput = getMatcher(html, "\"objURL\":\"(.*?)\"");
+            int index = (int) (Math.random() * ouput.size());
+            String url = ouput.get(index);
+            return url;
+        }
     }
 }

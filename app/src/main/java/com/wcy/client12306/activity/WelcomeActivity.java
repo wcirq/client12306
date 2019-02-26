@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -20,6 +21,11 @@ import android.widget.Toast;
 
 import com.wcy.client12306.R;
 import com.wcy.client12306.http.Crawler;
+import com.wcy.client12306.http.Session;
+import com.wcy.client12306.util.MessageUtil;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,8 +33,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -41,6 +49,8 @@ public class WelcomeActivity extends AppCompatActivity {
     TextView logoText;
     Timer timer = new Timer();
     int waiting_time = 3;
+    String userInfoPath;
+    Session session=null;
 
     private static class MyHandler extends Handler{
         private final WeakReference<WelcomeActivity> mTarget;
@@ -94,7 +104,6 @@ public class WelcomeActivity extends AppCompatActivity {
 //        requestWindowFeature(Window.FEATURE_NO_TITLE); // 继承的是Activity时
         getWindow().setFlags(WindowManager.LayoutParams. FLAG_FULLSCREEN , WindowManager.LayoutParams. FLAG_FULLSCREEN);
         setContentView(R.layout.activity_welcome);
-        intent = new Intent(this, LoginActivity.class);
         imageView = findViewById(R.id.imageView);
         Resources res = WelcomeActivity.this.getResources();
         BitmapDrawable bitmapDrawable = (BitmapDrawable) res.getDrawable(R.drawable.welcome);
@@ -164,15 +173,85 @@ public class WelcomeActivity extends AppCompatActivity {
 
     }
 
-    private void nextActivity(){
+    public void load(){
+        File file = new File(userInfoPath);
+        ObjectInputStream ois = null;
+        try {
+            ois = new ObjectInputStream(new FileInputStream(file));
+            session = (Session) ois.readObject();
+            ois.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean check_user(){
+        if (session!=null){
+            final JSONObject[] result = new JSONObject[1];
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    String url = "https://kyfw.12306.cn/passport/web/auth/uamtk";
+                    HashMap<String, String> paramsMap = new HashMap<>();
+                    paramsMap.put("appid", "otn");
+                    result[0] = (JSONObject) session.post(url,null,paramsMap);
+                }
+            });
+            thread.start();
+            try {
+                thread.join(3000);
+                if (result[0]!=null){
+                    if (result[0].getInt("result_code")==0){
+                        return true;
+                    }
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return false;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    public void gotoLogin(){
+        intent = new Intent(this, LoginActivity.class);
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(WelcomeActivity.this,"欢迎来购票!",Toast.LENGTH_SHORT).show();
+                Toast.makeText(WelcomeActivity.this,"请先登陆!",Toast.LENGTH_SHORT).show();
                 startActivity(intent);
                 finish(); // 销毁 Activit 禁止返回欢迎页
             }
         }, 500);
+    }
+
+    private void nextActivity(){
+        userInfoPath = getFilesDir().getAbsolutePath()+File.separator+"userInfo.ser";
+        boolean exists = new File(userInfoPath).exists();
+        if (exists) {
+            load();
+            boolean isSuccessful = check_user();
+            if (isSuccessful) {
+                MessageUtil messageUtil = new MessageUtil();
+                messageUtil.setMessStr("");
+                intent = new Intent(getApplicationContext(), HomeActivity.class);
+                intent.putExtra("session", session);
+                intent.putExtra("messageUtil", messageUtil);
+                startActivity(intent);
+                finish(); // 销毁 Activit 禁止返回欢迎页
+            }else {
+                gotoLogin();
+            }
+        }else {
+            gotoLogin();
+        }
+
 
     }
 

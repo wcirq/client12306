@@ -24,7 +24,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
@@ -54,9 +53,7 @@ import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -153,27 +150,9 @@ public class LoginActivity extends AppCompatActivity{
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide(); // 继承的是AppCompatActivity时
         }
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_login);
         userInfoPath = getFilesDir().getAbsolutePath()+File.separator+"userInfo.ser";
-        boolean exists = new File(userInfoPath).exists();
-        if (exists) {
-            load();
-            boolean isSuccessful = check_user();
-            if (isSuccessful) {
-                MessageUtil messageUtil = new MessageUtil();
-                messageUtil.setMessStr("");
-                Intent intent = new Intent(getApplicationContext(), DetailsActivity.class);
-                intent.putExtra("session", session);
-                intent.putExtra("messageUtil", messageUtil);
-                startActivity(intent);
-            }
-        }
         session = new Session();
-        LayoutInflater inflater = getLayoutInflater();
-        View view = inflater.inflate(R.layout.layout_login, null);
-        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
-        drawerLayout.addView(view,0);
-
         dbHelper = new DBHelper(getApplicationContext());
         SuperEditTextView userName = findViewById(R.id.userName);
         SuperEditTextView password = findViewById(R.id.password);
@@ -193,15 +172,6 @@ public class LoginActivity extends AppCompatActivity{
                 getCaptcha();
             }
         }).start();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener(){
-
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                return true;
-            }
-        });
     }
 
 
@@ -343,53 +313,6 @@ public class LoginActivity extends AppCompatActivity{
         }
     }
 
-    public boolean check_user(){
-        if (session!=null){
-            final JSONObject[] result = new JSONObject[1];
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String url = "https://kyfw.12306.cn/passport/web/auth/uamtk";
-                    HashMap<String, String> paramsMap = new HashMap<>();
-                    paramsMap.put("appid", "otn");
-                    result[0] = (JSONObject) session.post(url,null,paramsMap);
-                }
-            });
-            thread.start();
-            try {
-                thread.join(3000);
-                if (result[0]!=null){
-                    if (result[0].getInt("result_code")==0){
-                        return true;
-                    }
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                return false;
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        return false;
-    }
-
-
-    public void load(){
-        File file = new File(userInfoPath);
-        ObjectInputStream ois = null;
-        try {
-            ois = new ObjectInputStream(new FileInputStream(file));
-            session = (Session) ois.readObject();
-            ois.close();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void onClick(View view) {
         if (view.getId() == R.id.login) {
             message.setText("");
@@ -430,10 +353,11 @@ public class LoginActivity extends AppCompatActivity{
                                         dump();
                                         MessageUtil messageUtil = new MessageUtil();
                                         messageUtil.setMessStr(jsonObject.getString("uamtk"));
-                                        Intent intent = new Intent(getApplicationContext(), DetailsActivity.class);
+                                        Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                                         intent.putExtra("session", session);
                                         intent.putExtra("messageUtil", messageUtil);
                                         startActivity(intent);
+                                        finish();
                                     }else {
                                         if (jsonObject.getInt("result_code")==5){
                                             //验证码校验失败
