@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.wcy.treelibrary.Node;
+import cn.wcy.treelibrary.OnExpandableItemClickListerner;
+import cn.wcy.treelibrary.OnExpandableItemLongClickListener;
 import cn.wcy.treelibrary.OnInnerItemClickListener;
 import cn.wcy.treelibrary.OnInnerItemLongClickListener;
 import cn.wcy.treelibrary.TreeAdapter;
@@ -53,6 +55,19 @@ public class OrderActivity extends AppCompatActivity {
                 Toast.makeText(OrderActivity.this, "long click: " + node.name, Toast.LENGTH_SHORT).show();
             }
         });
+        adapter.setOnExpandableItemClickListerner(new OnExpandableItemClickListerner<Item>() {
+            @Override
+            public void onExpandableItemClick(Item node, AdapterView<?> parent, View view, int position) {
+                Toast.makeText(OrderActivity.this, "click: " + node.name, Toast.LENGTH_SHORT).show();
+            }
+        });
+        adapter.setOnExpandableItemLongClickListener(new OnExpandableItemLongClickListener<Item>() {
+            @Override
+            public void onExpandableItemLongClick(Item node, AdapterView<?> parent, View view, int position) {
+                Toast.makeText(OrderActivity.this, "long click: " + node.name, Toast.LENGTH_SHORT).show();
+            }
+        });
+
         lv.setAdapter(adapter);
         new Handler().postDelayed(new Runnable() {
             @Override

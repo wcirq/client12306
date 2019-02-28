@@ -14,7 +14,7 @@
         android:id="@+id/tvName"
         android:layout_toEndOf="@id/ivIcon"
         android:textSize="18dp"
-        android:textColor="#fff"
+        android:textColor="#000000"
         android:layout_marginStart="20dp"
         android:layout_centerVertical="true"
         android:layout_width="wrap_content"
