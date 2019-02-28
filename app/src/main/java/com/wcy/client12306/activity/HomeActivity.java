@@ -273,6 +273,7 @@ public class HomeActivity extends AppCompatActivity {
                         break;
                     case R.id.nav_order:
                         Intent intent_order = new Intent(HomeActivity.this, OrderActivity.class);
+                        intent_order.putExtra("session", session);
                         startActivity(intent_order);
                         break;
                     default:

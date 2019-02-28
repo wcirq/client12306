@@ -1,11 +1,15 @@
 package com.wcy.client12306.activity;
 
+import android.content.Intent;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -13,8 +17,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.wcy.client12306.R;
+import com.wcy.client12306.http.Session;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import cn.wcy.treelibrary.Node;
@@ -25,24 +36,41 @@ import cn.wcy.treelibrary.OnInnerItemLongClickListener;
 import cn.wcy.treelibrary.TreeAdapter;
 
 public class OrderActivity extends AppCompatActivity {
+    private Session session;
+    private MyAdapter adapter;
+    private Handler handler;
+    List<Item> list;
+    ListView listView;
+
+    private class MyHandler extends Handler {
+        private final WeakReference<OrderActivity> mTarget;
+
+        MyHandler(OrderActivity target) {
+            mTarget = new WeakReference<>(target);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            OrderActivity activity = mTarget.get();
+            if (msg.what == 1) {
+                adapter.notifyDataSetChanged();
+            } else if (msg.what == 2) {
+
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 //        setContentView(R.layout.activity_order);
-        ListView lv = new ListView(this);
-        setContentView(lv, new ViewGroup.LayoutParams(-1, -1));
-        final List<Item> list = new ArrayList<>();
-        list.add(new Item(0, 0, 0, false, "Android"));
-        list.add(new Item(1, 0, 1, false, "Service"));
-        list.add(new Item(2, 0, 1, false, "Activity"));
-        list.add(new Item(3, 0, 1, false, "Receiver"));
-        list.add(new Item(4, 0, 0, true, "Java Web"));
-        list.add(new Item(5, 4, 1, false, "CSS"));
-        list.add(new Item(6, 4, 1, false, "Jsp"));
-        list.add(new Item(7, 4, 1, true, "Html"));
-        list.add(new Item(8, 7, 2, false, "p"));
-        final MyAdapter adapter = new MyAdapter(lv, list);
+        listView = new ListView(this);
+        setContentView(listView, new ViewGroup.LayoutParams(-1, -1));
+        handler = new MyHandler(OrderActivity.this);
+        Intent intent = getIntent();
+        session = (Session) intent.getSerializableExtra("session");
+        list = new ArrayList<>();
+        adapter = new MyAdapter(listView, list);
         adapter.setOnInnerItemClickListener(new OnInnerItemClickListener<Item>() {
             @Override
             public void onClick(Item node, AdapterView<?> parent, View view, int position) {
@@ -67,15 +95,82 @@ public class OrderActivity extends AppCompatActivity {
                 Toast.makeText(OrderActivity.this, "long click: " + node.name, Toast.LENGTH_SHORT).show();
             }
         });
+        listView.setAdapter(adapter);
 
-        lv.setAdapter(adapter);
-        new Handler().postDelayed(new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
-                list.add(new Item(9, 7, 2, false, "a"));
-                adapter.notifyDataSetChanged();
+                HashMap<String, String> paramsMap = new HashMap<>();
+                paramsMap.put("come_from_flag","my_order");
+                paramsMap.put("pageIndex","0");
+                paramsMap.put("pageSize","8");
+                paramsMap.put("query_where","H");
+                paramsMap.put("queryStartDate","2018-01-01");
+                paramsMap.put("queryEndDate","2019-02-27");
+                paramsMap.put("queryType","1");
+                paramsMap.put("sequeue_train_name","");
+                JSONObject data1 = (JSONObject) session.post("https://kyfw.12306.cn/otn/login/conf", null, null);
+                HashMap<String, String> paramsMap1 = new HashMap<>();
+                paramsMap1.put("_json_att","");
+                JSONObject data2 = (JSONObject) session.post("https://kyfw.12306.cn/otn/queryOrder/queryMyOrderNoComplete", null, paramsMap1);
+                JSONObject data = (JSONObject) session.post("https://kyfw.12306.cn/otn/queryOrder/queryMyOrder", null, paramsMap);
+
+                try {
+                    int id=0;
+                    JSONArray orderDTODataList = data.getJSONObject("data").getJSONArray("OrderDTODataList");
+                    int tickets_length = 0;
+                    for (int i=0;i<orderDTODataList.length();i++){
+                        id += (i*3+tickets_length);
+                        String sequence_no = orderDTODataList.getJSONObject(i).getString("sequence_no");
+                        String order_date = orderDTODataList.getJSONObject(i).getString("order_date");
+                        list.add(new Item(id, id, 0, false, String.format("%s    %s", order_date, sequence_no)));
+                        Log.d("ID", String.valueOf(id));
+
+                        String from_station_name_page = orderDTODataList.getJSONObject(i).getJSONArray("from_station_name_page").getString(0);
+                        String to_station_name_page = orderDTODataList.getJSONObject(i).getJSONArray("to_station_name_page").getString(0);
+                        String start_train_date_page = orderDTODataList.getJSONObject(i).getString("start_train_date_page");
+                        String train_code_page = orderDTODataList.getJSONObject(i).getString("train_code_page");
+                        list.add(new Item(id+1, id, 1, false, String.format("%s-->%s  %s\r\n  %s", from_station_name_page, to_station_name_page, train_code_page, start_train_date_page)));
+                        Log.d("ID", String.valueOf(id+1));
+
+                        JSONArray tickets = orderDTODataList.getJSONObject(i).getJSONArray("tickets");
+                        JSONArray array_passser_name_page = orderDTODataList.getJSONObject(i).getJSONArray("array_passser_name_page");
+                        tickets_length += (tickets.length()-1);
+                        for (int j=0;j<tickets.length();j++){
+                            String user_name = array_passser_name_page.getString(j);
+                            String seat_name = tickets.getJSONObject(j).getString("seat_name");
+                            String seat_type_name = tickets.getJSONObject(j).getString("seat_type_name");
+                            String coach_name = tickets.getJSONObject(j).getString("coach_name");
+                            String ticket_status_name = tickets.getJSONObject(j).getString("ticket_status_name");
+                            String str_ticket_price_page = tickets.getJSONObject(j).getString("str_ticket_price_page");
+                            list.add(new Item(id+2+j, id+1, 2, false, String.format("%s - %s ￥%s\r\n%s车%s  %s", user_name, seat_type_name, str_ticket_price_page, coach_name, seat_name, ticket_status_name)));
+                            Log.d("ID", String.valueOf(id+2+j));
+                        }
+                        handler.sendEmptyMessage(1);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                /*list.add(new Item(0, 0, 0, false, "Android"));
+                list.add(new Item(1, 0, 1, false, "Service"));
+                list.add(new Item(2, 0, 1, false, "Activity"));
+                list.add(new Item(3, 0, 1, false, "Receiver"));
+                list.add(new Item(4, 0, 0, false, "Java Web"));
+                list.add(new Item(5, 4, 1, false, "CSS"));
+                list.add(new Item(6, 4, 1, false, "Jsp"));
+                list.add(new Item(7, 4, 1, false, "Html"));
+                list.add(new Item(8, 7, 2, false, "p"));*/
+                handler.sendEmptyMessage(1);
             }
-        }, 2000);
+        }).start();
+
+//        new Handler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                list.add(new Item(9, 7, 2, false, "a"));
+////                adapter.notifyDataSetChanged();
+//            }
+//        }, 5000);
     }
 
     private class MyAdapter extends TreeAdapter<Item> {
