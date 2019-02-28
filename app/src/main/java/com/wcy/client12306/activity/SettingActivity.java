@@ -1,6 +1,8 @@
 package com.wcy.client12306.activity;
 
+import android.app.Activity;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.annotation.NavigationRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,11 +11,19 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
+import android.widget.AutoCompleteTextView;
 
 import com.wcy.client12306.R;
+import com.wcy.client12306.util.SystemUtil;
 
-public class SettingActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
+public class SettingActivity extends AppCompatActivity {
+    String fileName = "wallpaper.txt";
+    AutoCompleteTextView autoCompleteTextView;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,45 +31,59 @@ public class SettingActivity extends AppCompatActivity implements NavigationView
             getSupportActionBar().hide(); // 继承的是AppCompatActivity时
         }
         setContentView(R.layout.activity_setting);
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        autoCompleteTextView = findViewById(R.id.wallpaper_type);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String wallpaper = SystemUtil.getFile(SettingActivity.this, fileName);
+                if (wallpaper!=null){
+                    Looper.prepare();
+                    autoCompleteTextView.setText(wallpaper);
+                    Looper.loop();
+                }else {
+                    SystemUtil.saveFile(SettingActivity.this,"手机壁纸", fileName);
+                    Looper.prepare();
+                    autoCompleteTextView.setText("手机壁纸");
+                    Looper.loop();
+                }
+            }
+        }).start();
     }
 
     @Override
-    public void onBackPressed() {
-        /**
-         * 监听back键 防止直接结束当前activity
-         */
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
+    protected void onStart() {
+        super.onStart();
     }
 
     @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        int id = menuItem.getItemId();
+    protected void onStop() {
+        super.onStop();
+    }
 
-        if (id == R.id.nav_buy_ticket) {
-            // Handle the camera action
-        } else if (id == R.id.nav_order) {
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        final String type = autoCompleteTextView.getText().toString();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SystemUtil.saveFile(SettingActivity.this, type, fileName);
+            }
+        }).start();
+    }
 
-        } else if (id == R.id.nav_data) {
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
 
-        } else if (id == R.id.nav_log_back_in) {
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 
-        } else if (id == R.id.nav_setting) {
-
-        } else if (id == R.id.nav_update) {
-
-        } else if (id == R.id.nav_update) {
-
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
+    @Override
+    protected void onRestart() {
+        super.onRestart();
     }
 }

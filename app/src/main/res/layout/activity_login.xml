@@ -7,12 +7,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".activity.LoginActivity">
-    <Button
-        android:id="@+id/setting"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="设置"
-        android:onClick="onClick"/>
     <View
         android:layout_width="match_parent"
         android:layout_height="30dp">
@@ -27,6 +21,7 @@
         android:maxLength="25"
         android:singleLine="true"
         android:text=""
+        android:hint="@string/userName"
 
         app:ic_left_click="@drawable/ic_left_click"
         app:ic_left_unclick="@drawable/ic_left_unclick"
@@ -164,20 +159,4 @@
             android:text="@string/login"
             android:onClick="onClick"/>
     </LinearLayout>
-
-    <Button
-        android:id="@+id/install"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:textColor="@color/white"
-        android:background="@color/divider_color"
-        android:text="@string/install"
-        android:onClick="onClick"/>
-
-    <!--<com.wcy.client12306.ui.GraphicsCodeView-->
-        <!--android:background="@android:color/background_dark"-->
-        <!--android:layout_width="250dp"-->
-        <!--android:layout_height="300dp" />-->
 </LinearLayout>

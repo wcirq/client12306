@@ -26,7 +26,9 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -53,6 +55,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static com.wcy.client12306.util.SystemUtil.setStatusBarColor;
+
 public class HomeActivity extends AppCompatActivity {
     Handler handler;
     String items[]=null;
@@ -63,6 +67,7 @@ public class HomeActivity extends AppCompatActivity {
     TextView userName, infoTextView;
     ImageView userImage;
     private File file = null;
+    LinearLayout linearLayoutBar;
 
     private static class MyHandler extends Handler {
         private final WeakReference<HomeActivity> mTarget;
@@ -97,10 +102,10 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
+        setStatusBarColor(this, R.color.colorfocus);
         LayoutInflater inflater = getLayoutInflater();
         View view = inflater.inflate(R.layout.layout_details, null);
-        LinearLayout drawerLayout = findViewById(R.id.content);
+        LinearLayout drawerLayout = findViewById(R.id.linear_layout_content);
         drawerLayout.addView(view,0);
 
         NavigationView navigationView = findViewById(R.id.navigation_view);
@@ -113,7 +118,65 @@ public class HomeActivity extends AppCompatActivity {
         Intent intent = getIntent();
         session = (Session) intent.getSerializableExtra("session");
         final MessageUtil messageUtil = intent.getParcelableExtra("messageUtil");
+
+        linearLayoutBar = findViewById(R.id.linear_layout_bar);
         listView = findViewById(R.id.list_item);
+        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            ViewGroup.LayoutParams params=linearLayoutBar.getLayoutParams();
+            boolean scroll = false; // 是否滑动
+            boolean trend = false;  // 是否向上滑动
+            int lastIndex = 0;
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                switch (scrollState) {
+                    // 当不滚动时
+                    case AbsListView.OnScrollListener.SCROLL_STATE_IDLE:// 是当屏幕停止滚动时
+                        scroll=false;
+                        // 判断滚动到底部
+                        if (listView.getLastVisiblePosition() == (listView
+                                .getCount() - 1)) {
+
+                        }
+                        // 判断滚动到顶部
+                        if (listView.getFirstVisiblePosition() == 0) {
+
+                        }
+
+                        break;
+                    case AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:// 滚动时
+                        scroll=true;
+                        break;
+                    case AbsListView.OnScrollListener.SCROLL_STATE_FLING:// 是当用户由于之前划动屏幕并抬起手指，屏幕产生惯性滑动时
+                        scroll=true;
+                        break;
+                }
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                lastIndex = firstVisibleItem;
+                if (lastIndex-firstVisibleItem<=0){
+                    trend=true;
+                }else {
+                    trend=false;
+                }
+                if (firstVisibleItem<2){
+                    params.height=150;
+                    linearLayoutBar.setLayoutParams(params);
+                }else {
+                    if (trend&&scroll){
+                        params.height=Math.max(linearLayoutBar.getHeight()-5, 0);
+                        linearLayoutBar.setLayoutParams(params);
+                    }else if (!trend&&scroll){
+                        params.height=Math.min(linearLayoutBar.getHeight()+5, 150);
+                        linearLayoutBar.setLayoutParams(params);
+                    }if (trend&&!scroll){
+                        params.height=0;
+                        linearLayoutBar.setLayoutParams(params);
+                    }
+                }
+            }
+        });
 
         handler = new MyHandler(HomeActivity.this);
 
@@ -184,6 +247,19 @@ public class HomeActivity extends AppCompatActivity {
                     case R.id.nav_update:
                         checkUpdate();
                         return true;
+                    case R.id.nav_setting:
+                        Intent intent = new Intent(HomeActivity.this, SettingActivity.class);
+                        startActivity(intent);
+                        break;
+                    case R.id.nav_share:
+                        Intent intent_share=new Intent(Intent.ACTION_SEND);
+//                        intent_share.setType("image/*");
+                        intent_share.setType("text/plain");
+                        intent_share.putExtra(Intent.EXTRA_SUBJECT, "分享");
+                        intent_share.putExtra(Intent.EXTRA_TEXT, "我有一个好玩的应用,推荐你下载! \r\n http://imtt.dd.qq.com/16891/08D63F6E91D1713194CBC3929B0BB7CC.apk");
+                        intent_share.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(Intent.createChooser(intent_share, getTitle()));
+                        break;
                     default:
                         break;
                 }
@@ -198,7 +274,7 @@ public class HomeActivity extends AppCompatActivity {
         String image_path = getFilesDir().getAbsolutePath()+File.separator+"welcome.jpg";
         boolean exists = new File(image_path).exists();
         if (exists){
-            LinearLayout linearLayout = findViewById(R.id.content);
+            LinearLayout linearLayout = findViewById(R.id.linear_layout_home);
             FileInputStream fis = null;
             try {
                 fis = new FileInputStream(image_path);
@@ -352,7 +428,7 @@ public class HomeActivity extends AppCompatActivity {
         /**
          * 监听back键 防止直接结束当前activity
          */
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.home_drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {

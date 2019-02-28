@@ -9,15 +9,20 @@
     tools:openDrawer="start"
     tools:context=".activity.HomeActivity">
     <LinearLayout
+        android:id="@+id/linear_layout_home"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/welcome"
         android:orientation="vertical">
         <LinearLayout
+            android:id="@+id/linear_layout_bar"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:orientation="horizontal"
+            android:alpha="1.0"
             android:background="@color/colorfocus">
             <TextView
+                android:id="@+id/linear_layout_title"
                 android:layout_width="80dp"
                 android:layout_height="match_parent"
                 android:paddingLeft="20dp"
@@ -26,14 +31,12 @@
                 android:text="@string/personal_details"/>
         </LinearLayout>
         <LinearLayout
-            android:id="@+id/content"
+            android:id="@+id/linear_layout_content"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"
-            android:background="@drawable/welcome"
             android:orientation="vertical">
-
         </LinearLayout>
     </LinearLayout>
 

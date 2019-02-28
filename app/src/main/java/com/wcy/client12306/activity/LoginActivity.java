@@ -57,6 +57,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
+import static com.wcy.client12306.util.SystemUtil.setStatusBarColor;
+
 
 public class LoginActivity extends AppCompatActivity{
     DBHelper dbHelper;
@@ -142,10 +144,8 @@ public class LoginActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide(); // 继承的是AppCompatActivity时
-        }
         setContentView(R.layout.activity_login);
+        setStatusBarColor(this, R.color.colorDeafult);
         userInfoPath = getFilesDir().getAbsolutePath()+File.separator+"userInfo.ser";
         session = new Session();
         dbHelper = new DBHelper(getApplicationContext());
@@ -309,18 +309,13 @@ public class LoginActivity extends AppCompatActivity{
             }else {
                 Toast.makeText(getApplicationContext(), "请选择图片！", Toast.LENGTH_SHORT).show();
             }
-        } else if (view.getId() == R.id.install) {
-
-        } else if (view.getId() == R.id.refresh) {
+        }else if (view.getId() == R.id.refresh) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     getCaptcha();
                 }
             }).start();
-        }else if (view.getId() == R.id.setting) {
-            Intent intent = new Intent(LoginActivity.this, SettingActivity.class);
-            startActivity(intent);
         }
 
     }
