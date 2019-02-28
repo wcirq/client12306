@@ -1,4 +1,4 @@
-package com.wcy.client12306;
+package cn.wcy.treelibrary;
 
 import org.junit.Test;
 

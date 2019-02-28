@@ -2,8 +2,6 @@ package com.wcy.client12306.test;
 
 import android.util.Log;
 
-import java.util.Map;
-
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;

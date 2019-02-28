@@ -260,6 +260,21 @@ public class HomeActivity extends AppCompatActivity {
                         intent_share.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(Intent.createChooser(intent_share, getTitle()));
                         break;
+                    case R.id.nav_log_back_in:
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                SystemUtil.deleteSingleFile(getFilesDir().getAbsolutePath()+File.separator+"userInfo.ser");
+                            }
+                        }).start();
+                        Intent intentLogin = new Intent(HomeActivity.this, LoginActivity.class);
+                        startActivity(intentLogin);
+                        finish();
+                        break;
+                    case R.id.nav_order:
+                        Intent intent_order = new Intent(HomeActivity.this, OrderActivity.class);
+                        startActivity(intent_order);
+                        break;
                     default:
                         break;
                 }

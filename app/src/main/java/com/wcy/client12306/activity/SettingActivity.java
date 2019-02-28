@@ -1,25 +1,13 @@
 package com.wcy.client12306.activity;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.os.Looper;
-import android.support.annotation.NavigationRes;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.view.MenuItem;
 import android.widget.AutoCompleteTextView;
 
 import com.wcy.client12306.R;
 import com.wcy.client12306.util.SystemUtil;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 
 public class SettingActivity extends AppCompatActivity {
     String fileName = "wallpaper.txt";

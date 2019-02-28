@@ -1,7 +1,6 @@
 package com.wcy.client12306.http;
 
 import android.graphics.BitmapFactory;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;

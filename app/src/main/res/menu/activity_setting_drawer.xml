@@ -18,8 +18,8 @@
             android:title="资料" />
         <item
             android:id="@+id/nav_log_back_in"
-            android:icon="@drawable/ic_menu_share"
-            android:title="重新登录" />
+            android:icon="@drawable/ic_menu_send"
+            android:title="退出" />
     </group>
 
     <item android:title="应用">
@@ -31,7 +31,7 @@
             <item
                 android:id="@+id/nav_update"
                 android:icon="@drawable/ic_menu_send"
-                android:title="检查更新" />
+                android:title="更新" />
             <item
                 android:id="@+id/nav_share"
                 android:icon="@drawable/ic_menu_share"

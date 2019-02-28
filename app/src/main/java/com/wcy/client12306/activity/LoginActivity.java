@@ -1,32 +1,16 @@
 package com.wcy.client12306.activity;
 
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
-import android.support.v4.content.FileProvider;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.MenuItem;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -34,11 +18,11 @@ import android.widget.Toast;
 
 import com.wcy.client12306.R;
 import com.wcy.client12306.db.DBHelper;
-import com.wcy.client12306.http.HttpUtil;
 import com.wcy.client12306.http.Session;
 import com.wcy.client12306.ui.SuperEditTextView;
-import com.wcy.client12306.util.ImageUtil;
 import com.wcy.client12306.util.MessageUtil;
+import com.wcy.client12306.util.SystemUtil;
+import com.wcy.client12306.util.ImageUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,16 +32,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
-
-import static com.wcy.client12306.util.SystemUtil.setStatusBarColor;
 
 
 public class LoginActivity extends AppCompatActivity{
@@ -145,7 +124,7 @@ public class LoginActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        setStatusBarColor(this, R.color.colorDeafult);
+        SystemUtil.setStatusBarColor(this, R.color.colorDeafult);
         userInfoPath = getFilesDir().getAbsolutePath()+File.separator+"userInfo.ser";
         session = new Session();
         dbHelper = new DBHelper(getApplicationContext());

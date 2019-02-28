@@ -1,4 +1,4 @@
-package com.wcy.client12306;
+package cn.wcy.client12306;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
