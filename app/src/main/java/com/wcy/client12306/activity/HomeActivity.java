@@ -333,7 +333,8 @@ public class HomeActivity extends AppCompatActivity {
 
     protected void loadNewVersionProgress() {
 //        final String uri = "http://www.apk.anzhi.com/data3/apk/201703/14/4636d7fce23c9460587d602b9dc20714_88002100.apk";
-        final String uri = "http://imtt.dd.qq.com/16891/08D63F6E91D1713194CBC3929B0BB7CC.apk";
+//        final String uri = "http://imtt.dd.qq.com/16891/08D63F6E91D1713194CBC3929B0BB7CC.apk";
+        final String uri = "http://47.254.71.113/app-release.apk";
 //        final String uri = "http://dlied5.myapp.com/myapp/1104466820/sgame/10006654_com.tencent.tmgp.sgame_u180_1.43.1.15_ca5461.apk";
         final String path = getFilesDir().getAbsolutePath()+ File.separator+"updata.apk";
         final ProgressDialog pd;    //进度条对话框
