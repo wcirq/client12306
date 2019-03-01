@@ -1,8 +1,11 @@
 package com.wcy.client12306.activity;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +21,7 @@ import android.widget.Toast;
 
 import com.wcy.client12306.R;
 import com.wcy.client12306.http.Session;
+import com.wcy.client12306.util.SystemUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -63,9 +67,12 @@ public class OrderActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_order);
+        setContentView(R.layout.activity_order);
         listView = new ListView(this);
-        setContentView(listView, new ViewGroup.LayoutParams(-1, -1));
+        ConstraintLayout constraintLayout = findViewById(R.id.order_constraint_layout);
+        constraintLayout.addView(listView);
+        SystemUtil.setStatusBarColor(this, R.color.lineColor_click);
+//        setContentView(listView, new ViewGroup.LayoutParams(-1, -1));
         handler = new MyHandler(OrderActivity.this);
         Intent intent = getIntent();
         session = (Session) intent.getSerializableExtra("session");
@@ -74,25 +81,25 @@ public class OrderActivity extends AppCompatActivity {
         adapter.setOnInnerItemClickListener(new OnInnerItemClickListener<Item>() {
             @Override
             public void onClick(Item node, AdapterView<?> parent, View view, int position) {
-                Toast.makeText(OrderActivity.this, "click: " + node.name, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(OrderActivity.this, "click: " + node.name, Toast.LENGTH_SHORT).show();
             }
         });
         adapter.setOnInnerItemLongClickListener(new OnInnerItemLongClickListener<Item>() {
             @Override
             public void onLongClick(Item node, AdapterView<?> parent, View view, int position) {
-                Toast.makeText(OrderActivity.this, "long click: " + node.name, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(OrderActivity.this, "long click: " + node.name, Toast.LENGTH_SHORT).show();
             }
         });
         adapter.setOnExpandableItemClickListerner(new OnExpandableItemClickListerner<Item>() {
             @Override
             public void onExpandableItemClick(Item node, AdapterView<?> parent, View view, int position) {
-                Toast.makeText(OrderActivity.this, "click: " + node.name, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(OrderActivity.this, "click: " + node.name, Toast.LENGTH_SHORT).show();
             }
         });
         adapter.setOnExpandableItemLongClickListener(new OnExpandableItemLongClickListener<Item>() {
             @Override
             public void onExpandableItemLongClick(Item node, AdapterView<?> parent, View view, int position) {
-                Toast.makeText(OrderActivity.this, "long click: " + node.name, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(OrderActivity.this, "long click: " + node.name, Toast.LENGTH_SHORT).show();
             }
         });
         listView.setAdapter(adapter);
@@ -124,14 +131,12 @@ public class OrderActivity extends AppCompatActivity {
                         String sequence_no = orderDTODataList.getJSONObject(i).getString("sequence_no");
                         String order_date = orderDTODataList.getJSONObject(i).getString("order_date");
                         list.add(new Item(id, id, 0, false, String.format("%s    %s", order_date, sequence_no)));
-                        Log.d("ID", String.valueOf(id));
 
                         String from_station_name_page = orderDTODataList.getJSONObject(i).getJSONArray("from_station_name_page").getString(0);
                         String to_station_name_page = orderDTODataList.getJSONObject(i).getJSONArray("to_station_name_page").getString(0);
                         String start_train_date_page = orderDTODataList.getJSONObject(i).getString("start_train_date_page");
                         String train_code_page = orderDTODataList.getJSONObject(i).getString("train_code_page");
                         list.add(new Item(id+1, id, 1, false, String.format("%s-->%s  %s\r\n  %s", from_station_name_page, to_station_name_page, train_code_page, start_train_date_page)));
-                        Log.d("ID", String.valueOf(id+1));
 
                         JSONArray tickets = orderDTODataList.getJSONObject(i).getJSONArray("tickets");
                         JSONArray array_passser_name_page = orderDTODataList.getJSONObject(i).getJSONArray("array_passser_name_page");
@@ -144,22 +149,11 @@ public class OrderActivity extends AppCompatActivity {
                             String ticket_status_name = tickets.getJSONObject(j).getString("ticket_status_name");
                             String str_ticket_price_page = tickets.getJSONObject(j).getString("str_ticket_price_page");
                             list.add(new Item(id+2+j, id+1, 2, false, String.format("%s - %s ￥%s\r\n%s车%s  %s", user_name, seat_type_name, str_ticket_price_page, coach_name, seat_name, ticket_status_name)));
-                            Log.d("ID", String.valueOf(id+2+j));
                         }
-                        handler.sendEmptyMessage(1);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                /*list.add(new Item(0, 0, 0, false, "Android"));
-                list.add(new Item(1, 0, 1, false, "Service"));
-                list.add(new Item(2, 0, 1, false, "Activity"));
-                list.add(new Item(3, 0, 1, false, "Receiver"));
-                list.add(new Item(4, 0, 0, false, "Java Web"));
-                list.add(new Item(5, 4, 1, false, "CSS"));
-                list.add(new Item(6, 4, 1, false, "Jsp"));
-                list.add(new Item(7, 4, 1, false, "Html"));
-                list.add(new Item(8, 7, 2, false, "p"));*/
                 handler.sendEmptyMessage(1);
             }
         }).start();
@@ -199,15 +193,21 @@ public class OrderActivity extends AppCompatActivity {
             switch(getItemViewType(position)) {
                 case 1:
                     return new Holder<Item>() {
+                        RelativeLayout rlParent;
                         private ImageView iv;
                         private TextView tv;
 
                         @Override
                         protected void setData(Item node, int position) {
+                            rlParent.setBackgroundColor(node.level==0?Color.argb(200,33, 150, 243):Color.argb(200,3, 169, 244));
+                            rlParent.setPadding(0, 20, 0, 20);
+                            View view = getConvertView();
+//                            view.setPadding(0, 20, 0, 20);
                             iv.setVisibility(node.hasChild() ? View.VISIBLE : View.INVISIBLE);
                             iv.setBackgroundResource(node.isExpand ? R.drawable.expand : R.drawable.fold);
                             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) iv.getLayoutParams();
-                            params.leftMargin = (node.level + 1) * dip2px(20);
+                            params.setMargins((node.level + 1) * dip2px(20), 0, 0, 0);
+//                            params.leftMargin = (node.level + 1) * dip2px(20);
                             iv.setLayoutParams(params);
                             tv.setText(node.name);
                         }
@@ -215,6 +215,7 @@ public class OrderActivity extends AppCompatActivity {
                         @Override
                         protected View createConvertView() {
                             View view = View.inflate(OrderActivity.this, R.layout.item_tree_list_has_child, null);
+                            rlParent = view.findViewById(R.id.rlParent);
                             iv = view.findViewById(R.id.ivIcon);
                             tv = view.findViewById(R.id.tvName);
                             return view;
@@ -222,19 +223,21 @@ public class OrderActivity extends AppCompatActivity {
                     };
                 default:
                     return new Holder<Item>() {
+                        RelativeLayout rlChild;
                         private TextView tv;
 
                         @Override
                         protected void setData(Item node, int position) {
                             tv.setText(node.name);
                             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) tv.getLayoutParams();
-                            params.leftMargin = (node.level + 3) * dip2px(20);
+                            params.leftMargin = (node.level + 1) * dip2px(20);
                             tv.setLayoutParams(params);
                         }
 
                         @Override
                         protected View createConvertView() {
                             View view = View.inflate(OrderActivity.this, R.layout.item_tree_list_no_child, null);
+                            rlChild = view.findViewById(R.id.rlChild);
                             tv = view.findViewById(R.id.tvName);
                             return view;
                         }

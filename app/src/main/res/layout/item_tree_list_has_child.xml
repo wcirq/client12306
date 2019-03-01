@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rlParent"
     android:layout_width="match_parent"
-    android:background="#FFFFFF"
     android:layout_height="40dp"
     android:minHeight="40dp">
 
@@ -14,9 +14,9 @@
         android:id="@+id/tvName"
         android:layout_toEndOf="@id/ivIcon"
         android:textSize="18dp"
-        android:textColor="#000000"
+        android:textColor="#FFFFFF"
         android:layout_marginStart="20dp"
         android:layout_centerVertical="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 </RelativeLayout>
