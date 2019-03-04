@@ -112,7 +112,7 @@ public class Session implements Serializable {
                 }
                 String str = stringBuffer.toString();
                 result = new JSONObject(str);
-            } else if (httpURLConnection.getContentType().contains("text/html")) {
+            } else if (httpURLConnection.getContentType().contains("text/html")|httpURLConnection.getContentType().contains("text/javascript")) {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"));
                 StringBuffer stringBuffer = new StringBuffer();
                 String temp = null;

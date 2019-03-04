@@ -13,7 +13,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-
+        <activity android:name=".activity.BuyActivity"></activity>
         <activity android:name=".activity.OrderActivity" />
         <activity android:name=".activity.HomeActivity" />
         <activity

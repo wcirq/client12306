@@ -276,6 +276,11 @@ public class HomeActivity extends AppCompatActivity {
                         intent_order.putExtra("session", session);
                         startActivity(intent_order);
                         break;
+                    case R.id.nav_buy_ticket:
+                        Intent intent_buy = new Intent(HomeActivity.this, BuyActivity.class);
+                        intent_buy.putExtra("session", session);
+                        startActivity(intent_buy);
+                        break;
                     default:
                         break;
                 }
