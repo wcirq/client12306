@@ -191,21 +191,6 @@ public class LoginActivity extends AppCompatActivity{
         }
     }
 
-    public void dump(){
-        FileOutputStream fs = null;
-        ObjectOutputStream os = null;
-        try {
-            fs = new FileOutputStream(userInfoPath);
-            os = new ObjectOutputStream(fs);
-            os.writeObject(session);
-            os.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void onClick(View view) {
         if (view.getId() == R.id.login) {
             message.setText("");
@@ -243,7 +228,7 @@ public class LoginActivity extends AppCompatActivity{
                                     if (jsonObject.getInt("result_code")==0){
                                         dbHelper.delete(1);
                                         dbHelper.insert(paramsMap.get("username"), paramsMap.get("password"));
-                                        dump();
+                                        Session.dump(session, userInfoPath);
                                         MessageUtil messageUtil = new MessageUtil();
                                         messageUtil.setMessStr(jsonObject.getString("uamtk"));
                                         Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
@@ -362,6 +347,7 @@ public class LoginActivity extends AppCompatActivity{
     @Override
     protected void onPause() {
         super.onPause();
+        Session.dump(session, userInfoPath);
     }
 
     @Override

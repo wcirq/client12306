@@ -457,4 +457,10 @@ public class HomeActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Session.dump(session, null);
+    }
 }

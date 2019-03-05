@@ -30,7 +30,7 @@
             android:layout_width="80dp"
             android:layout_height="50dp"
             android:textSize="12sp"
-            android:text="从江"
+            android:text="上海"
             android:hint="目的地"
             android:dropDownWidth="80dp"
             android:dropDownHeight="120dp"

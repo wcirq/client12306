@@ -3,6 +3,7 @@ package com.wcy.client12306.activity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -62,6 +63,10 @@ public class BuyActivity extends AppCompatActivity {
     final int month_final = MONTH[0];
     final int[] DAY = {calendar.get(Calendar.DAY_OF_MONTH)};
     final int day_final = DAY[0];
+    String date;
+    String start;
+    String destination;
+    ArrayList<String[]> ticketArrays = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,22 +181,117 @@ public class BuyActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String start = stationNameCode.get(startStand.getText().toString());
-                String destination = stationNameCode.get(destinationStand.getText().toString());
-                String date = goTime.getText().toString();
-                query(start, destination, date);
+                start = stationNameCode.get(startStand.getText().toString());
+                destination = stationNameCode.get(destinationStand.getText().toString());
+                date = goTime.getText().toString();
+                if (start==null){
+                    Toast.makeText(BuyActivity.this, "请输入正确的出发地", Toast.LENGTH_SHORT).show();
+                }else if (destination==null){
+                    Toast.makeText(BuyActivity.this, "请输入正确的目的地", Toast.LENGTH_SHORT).show();
+                }else {
+                    query(start, destination, date);
+                }
             }
         });
         initStationCode();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                TextView tv_name = (TextView) view.findViewById(R.id.train_id);
-                TextView buy_code = (TextView) view.findViewById(R.id.buy_code);
+            public void onItemClick(AdapterView<?> parent, final View view, final int position, long id) {
+                final TextView tv_name = (TextView) view.findViewById(R.id.train_id);
+                final TextView buy_code = (TextView) view.findViewById(R.id.buy_code);
                 if (buy_code.getText().equals("")){
                     Toast.makeText(BuyActivity.this, "车次:" + tv_name.getText() + "\r\n没有票，无法购买!" + buy_code.getText().toString(), Toast.LENGTH_SHORT).show();
                 }else {
                     Toast.makeText(BuyActivity.this, "车次:" + tv_name.getText() + "\r\n" + buy_code.getText().toString(), Toast.LENGTH_SHORT).show();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            String url = "https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest";
+                            HashMap<String, String> agrs = new HashMap<>();
+                            agrs.put("secretStr",buy_code.getText().toString());
+                            agrs.put("train_date",date);
+                            Calendar calendar = Calendar.getInstance();
+                            agrs.put("back_train_date",String.format("%d-%02d-%02d",calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)));
+                            agrs.put("tour_flag","dc");
+                            agrs.put("purpose_codes","ADULT");
+                            agrs.put("query_from_station_name",start);
+                            agrs.put("query_to_station_name",destination);
+                            agrs.put("undefined","");
+
+                            JSONObject resp = (JSONObject) session.post(url, null, agrs);
+                            Log.d("submitOrderRequest", resp.toString());
+                            try {
+                                if (resp.getBoolean("status")){
+                                    url = "https://kyfw.12306.cn/otn/confirmPassenger/initDc";
+                                    HashMap<String, String> data = new HashMap<>();
+                                    data.put("_json_att","");
+                                    String html = (String) session.post(url, null, data);
+                                    String globalRepeatSubmitToken = Crawler.getMatcher(html, "globalRepeatSubmitToken = '(.*?)';").get(0);
+                                    String key_check_isChange = Crawler.getMatcher(html, "'key_check_isChange':'(.*?)'").get(0);
+
+                                    url = "https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs";
+                                    data.clear();
+                                    data.put("_json_att","");
+                                    data.put("REPEAT_SUBMIT_TOKEN",globalRepeatSubmitToken);
+                                    JSONObject res = (JSONObject) session.post(url, null, data);
+                                    Log.d("getPassengerDTOs", res.toString());
+
+                                    url = "https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo";
+                                    data.clear();
+                                    data.put("cancel_flag","2");
+                                    data.put("bed_level_order_num","000000000000000000000000000000");
+                                    /*passengerTicketStr组成的格式：seatType,0,票类型（成人票填1）,乘客名,passenger_id_type_code,passenger_id_no,mobile_no,’N’
+                                    多个乘车人用’_’隔开
+                                    oldPassengerStr组成的格式：乘客名,passenger_id_type_code,passenger_id_no,passenger_type，’_’
+                                    多个乘车人用’_’隔开，注意最后的需要多加一个’_’。*/
+                                    data.put("passengerTicketStr","O,0,1,吴臣杨,1,522631199402283114,18685134228,N");
+                                    data.put("oldPassengerStr","吴臣杨,1,522631199402283114,1_");
+                                    data.put("tour_flag","dc");
+                                    data.put("randCode","");
+                                    data.put("whatsSelect","1");
+                                    data.put("_json_att","");
+                                    data.put("REPEAT_SUBMIT_TOKEN",globalRepeatSubmitToken);
+                                    JSONObject json = (JSONObject) session.post(url, null, data);
+                                    Log.d("checkOrderInfo", json.toString());
+                                    if (json.getJSONObject("data").getBoolean("submitStatus")){
+                                        url = "https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount";
+                                        data.clear();
+                                        DateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
+                                        String date_parse = sf.parse(date).toString();
+                                        date_parse = date_parse.substring(0,11)+date_parse.substring(30,date_parse.length())+" 00:00:00 GMT+0800 (中国标准时间)";
+                                        date_parse = date_parse.replace(" ", "+");
+                                        data.put("train_date",date_parse);
+                                        data.put("train_no",ticketArrays.get(position)[2]);
+                                        data.put("stationTrainCode",ticketArrays.get(position)[3]);
+                                    /*  ‘硬卧’ => ‘3’,
+                                        ‘软卧’ => ‘4’,
+                                        ‘二等座’ => ‘O’,
+                                        ‘一等座’ => ‘M’,
+                                        ‘硬座’ => ‘1’,*/
+                                        data.put("seatType","O");
+                                        data.put("fromStationTelecode",ticketArrays.get(position)[6]);
+                                        data.put("toStationTelecode",ticketArrays.get(position)[7]);
+                                        data.put("leftTicket",ticketArrays.get(position)[12]);
+                                        data.put("purpose_codes","00");
+                                        data.put("train_location",ticketArrays.get(position)[15]);
+                                        data.put("_json_att","");
+                                        data.put("REPEAT_SUBMIT_TOKEN",globalRepeatSubmitToken);
+                                        json = (JSONObject) session.post(url, null, data);
+                                        Log.d("getQueueCount", json.toString());
+                                        Looper.prepare();
+                                        Toast.makeText(BuyActivity.this, json.toString(), Toast.LENGTH_SHORT).show();
+                                        Looper.loop();
+                                    }
+                                    Log.d("","");
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    }).start();
                 }
             }
         });
@@ -234,38 +334,45 @@ public class BuyActivity extends AppCompatActivity {
                 JSONObject ticketInfo = (JSONObject) session.get(url, null);
                 try {
                     JSONArray ticketsJsonArray = ticketInfo.getJSONObject("data").getJSONArray("result");
-                    JSONObject stationMap = ticketInfo.getJSONObject("data").getJSONObject("map");
-                    ticketList.clear();
-                    for (int i=0;i<ticketsJsonArray.length();i++){
-                        Ticket ticket = new Ticket();
-                        String ticketArray[] = ticketsJsonArray.getString(i).split("\\|");
-                        ticket.setBuyCode(ticketArray[0]);
-                        ticket.setTrainId(ticketArray[3]);
-                        if (stationCodeName!=null){
-                            ticket.setStartStation(stationCodeName.get(ticketArray[6]));
-                            ticket.setArrivalStation(stationCodeName.get(ticketArray[7]));
-                        }else {
-                            ticket.setStartStation(stationMap.getString(ticketArray[6]));
-                            ticket.setArrivalStation(stationMap.getString(ticketArray[7]));
-                        }
-                        ticket.setStartTime(ticketArray[8]);
-                        ticket.setArrivalTime(ticketArray[9]);
-                        ticket.setThroughTime(ticketArray[10]);
+                    if (ticketsJsonArray.length()!=0) {
+                        JSONObject stationMap = ticketInfo.getJSONObject("data").getJSONObject("map");
+                        ticketList.clear();
+                        for (int i = 0; i < ticketsJsonArray.length(); i++) {
+                            Ticket ticket = new Ticket();
+                            String[] ticketArray = ticketsJsonArray.getString(i).split("\\|");
+                            ticketArrays.add(ticketArray);
+                            ticket.setBuyCode(ticketArray[0]);
+                            ticket.setTrainId(ticketArray[3]);
+                            if (stationCodeName != null) {
+                                ticket.setStartStation(stationCodeName.get(ticketArray[6]));
+                                ticket.setArrivalStation(stationCodeName.get(ticketArray[7]));
+                            } else {
+                                ticket.setStartStation(stationMap.getString(ticketArray[6]));
+                                ticket.setArrivalStation(stationMap.getString(ticketArray[7]));
+                            }
+                            ticket.setStartTime(ticketArray[8]);
+                            ticket.setArrivalTime(ticketArray[9]);
+                            ticket.setThroughTime(ticketArray[10]);
 
-                        ticket.setSpecialSeat(ticketArray[32].equals("")?"-":ticketArray[32]);
-                        ticket.setLevelOneSeat(ticketArray[31].equals("")?"-":ticketArray[31]);
-                        ticket.setLevelTwoSeat(ticketArray[30].equals("")?"-":ticketArray[30]);
-                        ticket.setSeniorSoft(ticketArray[21].equals("")?"-":ticketArray[21]);
-                        ticket.setLevelOneSoft(ticketArray[23].equals("")?"-":ticketArray[23]);
-                        ticket.setBulletSoft(ticketArray[33].equals("")?"-":ticketArray[33]);
-                        ticket.setHardsLeeper(ticketArray[28].equals("")?"-":ticketArray[28]);
-                        ticket.setSoftSeat("-");
-                        ticket.setHardSeat(ticketArray[29].equals("")?"-":ticketArray[29]);
-                        ticket.setNoSeat(ticketArray[26].equals("")?"-":ticketArray[26]);
-                        ticket.setOther("-");
-                        ticketList.add(ticket);
+                            ticket.setSpecialSeat(ticketArray[32].equals("") ? "-" : ticketArray[32]);
+                            ticket.setLevelOneSeat(ticketArray[31].equals("") ? "-" : ticketArray[31]);
+                            ticket.setLevelTwoSeat(ticketArray[30].equals("") ? "-" : ticketArray[30]);
+                            ticket.setSeniorSoft(ticketArray[21].equals("") ? "-" : ticketArray[21]);
+                            ticket.setLevelOneSoft(ticketArray[23].equals("") ? "-" : ticketArray[23]);
+                            ticket.setBulletSoft(ticketArray[33].equals("") ? "-" : ticketArray[33]);
+                            ticket.setHardsLeeper(ticketArray[28].equals("") ? "-" : ticketArray[28]);
+                            ticket.setSoftSeat("-");
+                            ticket.setHardSeat(ticketArray[29].equals("") ? "-" : ticketArray[29]);
+                            ticket.setNoSeat(ticketArray[26].equals("") ? "-" : ticketArray[26]);
+                            ticket.setOther("-");
+                            ticketList.add(ticket);
+                        }
+                        handler.sendEmptyMessage(1);
+                    }else {
+                        Looper.prepare();
+                        Toast.makeText(BuyActivity.this, "没有查到车次信息,可能改线路暂未开通!", Toast.LENGTH_SHORT).show();
+                        Looper.loop();
                     }
-                    handler.sendEmptyMessage(1);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -292,5 +399,11 @@ public class BuyActivity extends AppCompatActivity {
 //                startStand.dismissDropDown();
             }
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Session.dump(session, null);
     }
 }

@@ -172,22 +172,6 @@ public class WelcomeActivity extends AppCompatActivity {
 
     }
 
-    public void load(){
-        File file = new File(userInfoPath);
-        ObjectInputStream ois = null;
-        try {
-            ois = new ObjectInputStream(new FileInputStream(file));
-            session = (Session) ois.readObject();
-            ois.close();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public boolean check_user(){
         if (session!=null){
             final JSONObject[] result = new JSONObject[1];
@@ -234,7 +218,7 @@ public class WelcomeActivity extends AppCompatActivity {
         userInfoPath = getFilesDir().getAbsolutePath()+File.separator+"userInfo.ser";
         boolean exists = new File(userInfoPath).exists();
         if (exists) {
-            load();
+            session = Session.load(userInfoPath);
             boolean isSuccessful = check_user();
             if (isSuccessful) {
                 MessageUtil messageUtil = new MessageUtil();

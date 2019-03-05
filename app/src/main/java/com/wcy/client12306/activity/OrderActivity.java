@@ -29,6 +29,8 @@ import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -113,7 +115,9 @@ public class OrderActivity extends AppCompatActivity {
                 paramsMap.put("pageSize","8");
                 paramsMap.put("query_where","H");
                 paramsMap.put("queryStartDate","2018-01-01");
-                paramsMap.put("queryEndDate","2019-02-27");
+                long time1 = Calendar.getInstance().getTimeInMillis()-1000*3600*24;
+                Date date = new Date(time1);
+                paramsMap.put("queryEndDate",String.format("%d-%02d-%02d", 1900+date.getYear(), date.getMonth()+1, date.getDate()));
                 paramsMap.put("queryType","1");
                 paramsMap.put("sequeue_train_name","");
                 JSONObject data1 = (JSONObject) session.post("https://kyfw.12306.cn/otn/login/conf", null, null);
@@ -261,5 +265,11 @@ public class OrderActivity extends AppCompatActivity {
             super(id, pId, level, isExpand);
             this.name = name;
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Session.dump(session, null);
     }
 }

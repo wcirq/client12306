@@ -7,9 +7,15 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -205,6 +211,43 @@ public class Session implements Serializable {
             }
         }
         return result;
+    }
+
+    public static void dump(Session session, String userInfoPath){
+        if (userInfoPath==null){
+            userInfoPath = "/data/user/0/com.wcy.client12306/files/userInfo.ser";
+        }
+        FileOutputStream fs = null;
+        ObjectOutputStream os = null;
+        try {
+            fs = new FileOutputStream(userInfoPath);
+            os = new ObjectOutputStream(fs);
+            os.writeObject(session);
+            os.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Session load(String userInfoPath){
+        File file = new File(userInfoPath);
+        ObjectInputStream ois = null;
+        Session session;
+        try {
+            ois = new ObjectInputStream(new FileInputStream(file));
+            session = (Session) ois.readObject();
+            ois.close();
+            return session;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static void main(String args[]){
