@@ -1,5 +1,6 @@
 package com.wcy.client12306.activity;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
@@ -9,10 +10,15 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.wcy.client12306.R;
 import com.wcy.client12306.adapter.TicketAdapter;
@@ -25,15 +31,22 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public class BuyActivity extends AppCompatActivity {
     HashMap<String, String> stationNameCode = null;
     HashMap<String, String> stationCodeName = null;
     AutoCompleteTextView startStand;
     AutoCompleteTextView destinationStand;
+    EditText goTime;
     ArrayAdapter<String> startAdapter;
     ArrayAdapter<String> destinationAdapter;
     ArrayList<String> startStandList;
@@ -42,6 +55,13 @@ public class BuyActivity extends AppCompatActivity {
     private TicketAdapter ticketAdapter;
     private Session session;
     private List<Ticket> ticketList = new ArrayList<>();
+    Calendar calendar = Calendar.getInstance();
+    final int[] YEAR = {calendar.get(Calendar.YEAR)};
+    final int year_final = YEAR[0];
+    final int[] MONTH = {calendar.get(Calendar.MONTH)};
+    final int month_final = MONTH[0];
+    final int[] DAY = {calendar.get(Calendar.DAY_OF_MONTH)};
+    final int day_final = DAY[0];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,42 +69,102 @@ public class BuyActivity extends AppCompatActivity {
         setContentView(R.layout.activity_buy);
         startStandList = new ArrayList<>();
         destinationStandList = new ArrayList<>();
-        destinationStandList.add("adad");
-        destinationStandList.add("adad");
         startStand = findViewById(R.id.start_stand);
         destinationStand = findViewById(R.id.destination_stand);
+        goTime = findViewById(R.id.go_time);
+        goTime.setText(String.format("%d-%02d-%02d", year_final, month_final + 1, day_final));
+        goTime.setOnClickListener(new View.OnClickListener() {
+            public Date string2date(String date) {
+                DateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
+                try {
+                    return sf.parse(date);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+            @Override
+            public void onClick(View v) {
+                DatePickerDialog.OnDateSetListener listener=new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                        Date dateNow = string2date(String.format("%d-%d-%d", year_final, month_final+1,day_final));
+                        Date dateChoose = string2date(String.format("%d-%d-%d", year, month+1,day));
+                        long days=(dateChoose.getTime()-dateNow.getTime())/(1000*3600*24);
+                        Log.d("days", String.valueOf(days));
+                        if (days>=30){
+                            Toast.makeText(BuyActivity.this,"这一天的票还没开卖，请重新选择!", Toast.LENGTH_SHORT).show();
+                            goTime.setText(String.format("%d-%02d-%02d", year_final, month_final + 1, day_final));
+                            goTime.setText(String.format("%d-%02d-%02d", year_final, month_final + 1, day_final));
+                            YEAR[0] = year_final;
+                            MONTH[0] =month_final;
+                            DAY[0] = day_final;
+                        }else if (days<0){
+                            Toast.makeText(BuyActivity.this,"不能买以前的票!", Toast.LENGTH_SHORT).show();
+                            goTime.setText(String.format("%d-%02d-%02d", year_final, month_final + 1, day_final));
+                            YEAR[0] = year_final;
+                            MONTH[0] =month_final;
+                            DAY[0] = day_final;
+                        }else {
+                            goTime.setText(String.format("%d-%02d-%02d", year, month + 1, day));
+                            YEAR[0] = year;
+                            MONTH[0] =month;
+                            DAY[0] = day;
+                        }
+                    }
+                };
+                DatePickerDialog dialog=new DatePickerDialog(BuyActivity.this, 0,listener, YEAR[0], MONTH[0], DAY[0]);
+                dialog.show();
+            }
+        });
+
         startAdapter = new ArrayAdapter<>(
                 this,
-                android.R.layout.simple_dropdown_item_1line,
+                R.layout.item_buy_hint_list,
                 startStandList);
         destinationAdapter = new ArrayAdapter<>(
                 this,
-                android.R.layout.simple_dropdown_item_1line,
+                R.layout.item_buy_hint_list,
                 destinationStandList);
         startStand.setAdapter(startAdapter);
         destinationStand.setAdapter(destinationAdapter);
-        startStand.setThreshold(1);
-        startStand.setDropDownHeight(350);
-        startStand.setCompletionHint("最近的5条记录");
         startStand.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                startStandList.add("a");
-                handler.sendEmptyMessage(2);
+//                handler.sendEmptyMessage(2);
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                startStandList.add("b");
-                handler.sendEmptyMessage(2);
+//                handler.sendEmptyMessage(2);
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                startStandList.add("c");
-                handler.sendEmptyMessage(2);
+//                handler.sendEmptyMessage(2);
             }
         });
+        startStand.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus){
+                    startStand.showDropDown();
+                }else {
+                    startStand.dismissDropDown();
+                }
+            }
+        });
+        destinationStand.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus){
+                    destinationStand.showDropDown();
+                }else {
+                    destinationStand.dismissDropDown();
+                }
+            }
+        });
+
 
         handler = new MyHandler(BuyActivity.this);
         Intent intent = getIntent();
@@ -96,13 +176,25 @@ public class BuyActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String start = "KQW";
-                String destination = "KNW";
-                String date = "2019-03-29";
+                String start = stationNameCode.get(startStand.getText().toString());
+                String destination = stationNameCode.get(destinationStand.getText().toString());
+                String date = goTime.getText().toString();
                 query(start, destination, date);
             }
         });
         initStationCode();
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView tv_name = (TextView) view.findViewById(R.id.train_id);
+                TextView buy_code = (TextView) view.findViewById(R.id.buy_code);
+                if (buy_code.getText().equals("")){
+                    Toast.makeText(BuyActivity.this, "车次:" + tv_name.getText() + "\r\n没有票，无法购买!" + buy_code.getText().toString(), Toast.LENGTH_SHORT).show();
+                }else {
+                    Toast.makeText(BuyActivity.this, "车次:" + tv_name.getText() + "\r\n" + buy_code.getText().toString(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void initStationCode() {
@@ -119,6 +211,10 @@ public class BuyActivity extends AppCompatActivity {
                         stationCodeName.put(stationCodeArray[2], stationCodeArray[1]);
                     }
                 }
+                Set<String> keys=stationNameCode.keySet();
+                startStandList.addAll(keys);
+                destinationStandList.addAll(keys);
+                Log.d("","");
             }
         }).start();
     }
@@ -192,7 +288,8 @@ public class BuyActivity extends AppCompatActivity {
             } else if (msg.what == 2) {
                 startAdapter.notifyDataSetChanged();
                 destinationAdapter.notifyDataSetChanged();
-                startStand.showDropDown();
+//                startStand.showDropDown();
+//                startStand.dismissDropDown();
             }
         }
     }

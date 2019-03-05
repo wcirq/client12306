@@ -27,6 +27,9 @@ public class TicketAdapter extends ArrayAdapter<Ticket> {
         //动态加载布局文件
         View view = LayoutInflater.from(getContext()).inflate(resourceID,parent,false);
 
+        TextView buyCode = view.findViewById(R.id.buy_code);
+        buyCode.setText(ticket.getBuyCode());
+
         TextView train_id = view.findViewById(R.id.train_id);
         train_id.setText(ticket.getTrainId());
 

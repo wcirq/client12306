@@ -8,32 +8,42 @@
     tools:context=".activity.BuyActivity">
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="70dp"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:orientation="horizontal">
         <AutoCompleteTextView
             android:id="@+id/start_stand"
-            android:layout_width="60dp"
+            android:layout_width="80dp"
             android:layout_height="50dp"
             android:textSize="12sp"
+            android:text="贵阳"
             android:hint="出发地"
-            android:dropDownWidth="60dp"
-            android:dropDownHeight="260dp"
-            android:completionHint="请输入搜索内容"
+            android:dropDownWidth="80dp"
+            android:dropDownHeight="120dp"
+            android:dropDownAnchor="@id/start_stand"
+            android:completionHint=""
             android:completionThreshold="1"
-            android:dropDownHorizontalOffset="5dp"
-            tools:text="@tools:sample/first_names" />
+            />
         <AutoCompleteTextView
             android:id="@+id/destination_stand"
-            android:layout_width="60dp"
+            android:layout_width="80dp"
             android:layout_height="50dp"
             android:textSize="12sp"
-            android:hint="目的地"/>
+            android:text="从江"
+            android:hint="目的地"
+            android:dropDownWidth="80dp"
+            android:dropDownHeight="120dp"
+            android:dropDownAnchor="@id/destination_stand"
+            android:completionHint=""
+            android:completionThreshold="1" />
         <EditText
             android:id="@+id/go_time"
             android:layout_width="120dp"
             android:layout_height="50dp"
             android:textSize="12sp"
-            android:hint="日期: 2019-02-04"/>
+            android:focusable="false"
+            android:hint="日期:2019-02-04"/>
         <Button
             android:id="@+id/button_query"
             android:layout_width="60dp"
@@ -43,10 +53,11 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:gravity="center"
+        android:orientation="horizontal">
         <ListView
             android:id="@+id/ticket_list_view"
-            android:layout_width="match_parent"
+            android:layout_width="350dp"
             android:layout_height="match_parent"
             android:dividerHeight="15dp">
         </ListView>

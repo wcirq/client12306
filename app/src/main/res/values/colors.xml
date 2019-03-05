@@ -13,4 +13,6 @@
     <color name="white">#FFFFFF</color>
     <color name="divider_color">#03A9F4</color>
     <color name="list_view_line">#eeeeee</color>
+    <color name="color_999999">#999999</color>
+    <color name="color_393b42">#393b42</color>
 </resources>

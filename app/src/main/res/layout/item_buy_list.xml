@@ -8,6 +8,10 @@
         android:layout_height="30dp"
         android:orientation="horizontal">
         <TextView
+            android:id="@+id/buy_code"
+            android:layout_width="0dp"
+            android:layout_height="0dp" />
+        <TextView
             android:id="@+id/train_id"
             android:layout_width="50dp"
             android:layout_height="match_parent"
