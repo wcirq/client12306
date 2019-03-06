@@ -24,6 +24,7 @@ import com.wcy.client12306.R;
 import com.wcy.client12306.db.DBHelper;
 import com.wcy.client12306.http.Session;
 import com.wcy.client12306.service.FloatVideoWindowService;
+import com.wcy.client12306.service.RocketService;
 import com.wcy.client12306.ui.SuperEditTextView;
 import com.wcy.client12306.util.MessageUtil;
 import com.wcy.client12306.util.SystemUtil;
@@ -312,6 +313,8 @@ public class LoginActivity extends AppCompatActivity{
                     getCaptcha();
                 }
             }).start();
+        }else if (view.getId() == R.id.start) {
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
         }
 
     }
@@ -396,7 +399,7 @@ public class LoginActivity extends AppCompatActivity{
                 getCaptcha();
             }
         }).start();
-        isFrist = false;
-        unbindService(mVideoServiceConnection);//不显示悬浮框
+//        isFrist = false;
+//        unbindService(mVideoServiceConnection);//不显示悬浮框
     }
 }

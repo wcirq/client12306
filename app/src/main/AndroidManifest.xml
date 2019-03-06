@@ -14,10 +14,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
+        <activity android:name=".activity.SmokeBackActivity"></activity>
+
+        <service
+            android:name=".service.RocketService"
+            android:enabled="true"
+            android:exported="true" />
         <service
             android:name=".service.FloatVideoWindowService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity android:name=".activity.BuyActivity" />
         <activity android:name=".activity.OrderActivity" />
