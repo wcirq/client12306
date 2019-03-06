@@ -77,7 +77,7 @@ public class BuyActivity extends AppCompatActivity {
         startStand = findViewById(R.id.start_stand);
         destinationStand = findViewById(R.id.destination_stand);
         goTime = findViewById(R.id.go_time);
-        goTime.setText(String.format("%d-%02d-%02d", year_final, month_final + 1, day_final));
+        goTime.setText(String.format("%d-%02d-%02d", year_final, month_final + 1, day_final + 1));
         goTime.setOnClickListener(new View.OnClickListener() {
             public Date string2date(String date) {
                 DateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
@@ -202,7 +202,7 @@ public class BuyActivity extends AppCompatActivity {
                 if (buy_code.getText().equals("")){
                     Toast.makeText(BuyActivity.this, "车次:" + tv_name.getText() + "\r\n没有票，无法购买!" + buy_code.getText().toString(), Toast.LENGTH_SHORT).show();
                 }else {
-                    Toast.makeText(BuyActivity.this, "车次:" + tv_name.getText() + "\r\n" + buy_code.getText().toString(), Toast.LENGTH_SHORT).show();
+                    // Toast.makeText(BuyActivity.this, "车次:" + tv_name.getText() + "\r\n" + buy_code.getText().toString(), Toast.LENGTH_SHORT).show();
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -228,6 +228,7 @@ public class BuyActivity extends AppCompatActivity {
                                     String html = (String) session.post(url, null, data);
                                     String globalRepeatSubmitToken = Crawler.getMatcher(html, "globalRepeatSubmitToken = '(.*?)';").get(0);
                                     String key_check_isChange = Crawler.getMatcher(html, "'key_check_isChange':'(.*?)'").get(0);
+                                    String purpose_codes = Crawler.getMatcher(html, "'purpose_codes':'(.*?)'").get(0);
 
                                     url = "https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs";
                                     data.clear();
@@ -259,7 +260,7 @@ public class BuyActivity extends AppCompatActivity {
                                         DateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
                                         String date_parse = sf.parse(date).toString();
                                         date_parse = date_parse.substring(0,11)+date_parse.substring(30,date_parse.length())+" 00:00:00 GMT+0800 (中国标准时间)";
-                                        date_parse = date_parse.replace(" ", "+");
+//                                        date_parse = date_parse.replace(" ", "+");
                                         data.put("train_date",date_parse);
                                         data.put("train_no",ticketArrays.get(position)[2]);
                                         data.put("stationTrainCode",ticketArrays.get(position)[3]);
@@ -272,10 +273,20 @@ public class BuyActivity extends AppCompatActivity {
                                         data.put("fromStationTelecode",ticketArrays.get(position)[6]);
                                         data.put("toStationTelecode",ticketArrays.get(position)[7]);
                                         data.put("leftTicket",ticketArrays.get(position)[12]);
-                                        data.put("purpose_codes","00");
+                                        data.put("purpose_codes",purpose_codes);
                                         data.put("train_location",ticketArrays.get(position)[15]);
                                         data.put("_json_att","");
                                         data.put("REPEAT_SUBMIT_TOKEN",globalRepeatSubmitToken);
+                                        HashMap<String, HashMap<String, String>> cookies = new HashMap<>();
+                                        HashMap<String, String> cookie = new HashMap<>();
+                                        cookie.put("_jc_save_fromDate", "2019-04-01");
+                                        cookie.put("_jc_save_fromStation", "北京,BJP");
+                                        cookie.put("_jc_save_showIns", "true");
+                                        cookie.put("_jc_save_toDate", "2019-03-06");
+                                        cookie.put("_jc_save_toStation", "上海,SHH");
+                                        cookie.put("_jc_save_wfdc_flag", "dc");
+                                        cookies.put("/otn", cookie);
+                                        session.addCookies(cookies);
                                         json = (JSONObject) session.post(url, null, data);
                                         Log.d("getQueueCount", json.toString());
                                         Looper.prepare();

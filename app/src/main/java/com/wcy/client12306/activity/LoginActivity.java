@@ -1,11 +1,15 @@
 package com.wcy.client12306.activity;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +23,7 @@ import android.widget.Toast;
 import com.wcy.client12306.R;
 import com.wcy.client12306.db.DBHelper;
 import com.wcy.client12306.http.Session;
+import com.wcy.client12306.service.FloatVideoWindowService;
 import com.wcy.client12306.ui.SuperEditTextView;
 import com.wcy.client12306.util.MessageUtil;
 import com.wcy.client12306.util.SystemUtil;
@@ -40,6 +45,7 @@ import java.util.Objects;
 
 
 public class LoginActivity extends AppCompatActivity{
+    private boolean isFrist = false;
     DBHelper dbHelper;
     private MyHandler handler = null;
     private ImageView imageView;
@@ -51,6 +57,8 @@ public class LoginActivity extends AppCompatActivity{
     Session session = null;
     TextView message;
     String userInfoPath;
+    ServiceConnection mVideoServiceConnection;
+    Intent intentService;
 
     public LoginActivity() {
     }
@@ -146,6 +154,30 @@ public class LoginActivity extends AppCompatActivity{
                 getCaptcha();
             }
         }).start();
+
+        mVideoServiceConnection = new ServiceConnection() {
+
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                // 获取服务的操作对象
+                FloatVideoWindowService.MyBinder binder = (FloatVideoWindowService.MyBinder) service;
+                FloatVideoWindowService floatVideoWindowService = binder.getService();
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                Log.d("", "");
+            }
+        };
+        if (isFrist){
+            startVideoService();
+        }
+    }
+
+    public void startVideoService() {
+        moveTaskToBack(true);//最小化Activity
+        intentService = new Intent(this, FloatVideoWindowService.class);//开启服务显示悬浮框
+        bindService(intentService, mVideoServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
 
@@ -364,5 +396,7 @@ public class LoginActivity extends AppCompatActivity{
                 getCaptcha();
             }
         }).start();
+        isFrist = false;
+        unbindService(mVideoServiceConnection);//不显示悬浮框
     }
 }

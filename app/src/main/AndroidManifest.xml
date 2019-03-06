@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="androd.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
         android:allowBackup="true"
@@ -13,7 +14,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".activity.BuyActivity"></activity>
+        <service
+            android:name=".service.FloatVideoWindowService"
+            android:enabled="true"
+            android:exported="true"></service>
+
+        <activity android:name=".activity.BuyActivity" />
         <activity android:name=".activity.OrderActivity" />
         <activity android:name=".activity.HomeActivity" />
         <activity

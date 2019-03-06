@@ -1,6 +1,9 @@
 package com.wcy.client12306.activity;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,6 +11,8 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -21,6 +26,7 @@ import android.widget.Toast;
 import com.wcy.client12306.R;
 import com.wcy.client12306.http.Crawler;
 import com.wcy.client12306.http.Session;
+import com.wcy.client12306.service.FloatVideoWindowService;
 import com.wcy.client12306.util.MessageUtil;
 
 import org.json.JSONException;

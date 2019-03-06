@@ -1,6 +1,7 @@
 package com.wcy.client12306.http;
 
 import android.graphics.BitmapFactory;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,6 +31,21 @@ public class Session implements Serializable {
 
     public Session(){
 
+    }
+
+    public void addCookies(HashMap<String, HashMap<String, String>> cookies){
+        StringBuffer cookiesBuffer = new StringBuffer();
+        for (Map.Entry<String, HashMap<String, String>> cookiesPath:cookies.entrySet()){
+            String keyPath = cookiesPath.getKey();
+            if (!COOKIES.containsKey(keyPath)){
+                COOKIES.put(keyPath, cookies.get(keyPath));
+                COOKIES.put(keyPath, cookies.get(keyPath));
+            }else {
+                for (Map.Entry<String, String> cookiesPathValue:cookiesPath.getValue().entrySet()) {
+                    COOKIES.get(keyPath).put(cookiesPathValue.getKey(), cookiesPathValue.getValue());
+                }
+            }
+        }
     }
 
     private void dealCookie(HttpURLConnection httpURLConnection){
@@ -72,7 +88,8 @@ public class Session implements Serializable {
                 httpURLConnection.setRequestProperty(key, headers.get(key));
             }
         } else {
-            httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
+//            httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
+            httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0");
         }
         return httpURLConnection;
     }

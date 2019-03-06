@@ -15,4 +15,6 @@
     <color name="list_view_line">#eeeeee</color>
     <color name="color_999999">#999999</color>
     <color name="color_393b42">#393b42</color>
+    <color name="black_1f2d3d">#1f2d3d</color>
+    <color name="transparent">#00ffffff</color>
 </resources>

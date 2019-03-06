@@ -17,7 +17,7 @@
             android:layout_width="80dp"
             android:layout_height="50dp"
             android:textSize="12sp"
-            android:text="贵阳"
+            android:text="北京"
             android:hint="出发地"
             android:dropDownWidth="80dp"
             android:dropDownHeight="120dp"
