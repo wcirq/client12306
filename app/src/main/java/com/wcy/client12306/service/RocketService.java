@@ -5,40 +5,61 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.AnimationDrawable;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.renderscript.ScriptGroup;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.wcy.client12306.R;
 import com.wcy.client12306.activity.SmokeBackActivity;
+import com.wcy.client12306.inter.OnLocationListener;
 
 public class RocketService extends Service {
+    OnLocationListener onLocationListener;
 
     // 手机窗体布局的管理者
     private WindowManager mWindowManager;
     // 手机窗体的布局
     private WindowManager.LayoutParams mParams;
+    private WindowManager.LayoutParams mLogParams;
     // 展示小火箭的自定义布局
     private View mToastRocketView;
+    private LinearLayout mToastLogView;
     // 展示小火箭的ImageView
     private ImageView mRocketImage;
     // 手机窗体的宽度
     private int mWindowWidth;
     // 手机窗体的高度
     private int mWindowHeight;
+
+    public void setOnLocationListener(OnLocationListener onLocationListener){
+        this.onLocationListener = onLocationListener;
+    }
+
     // 消息传递机制
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             mParams.y = (Integer) msg.obj;
+            onLocationListener.onLocation(mParams);
             mWindowManager.updateViewLayout(mToastRocketView, mParams);
         }
     };
+
+    public class RocketBinder extends Binder{
+        public RocketService getService(){
+            return RocketService.this;
+        }
+
+    }
 
     @Override
     public void onCreate() {
@@ -47,11 +68,74 @@ public class RocketService extends Service {
         mWindowWidth = mWindowManager.getDefaultDisplay().getWidth();
         mWindowHeight = mWindowManager.getDefaultDisplay().getHeight();
         mParams = new WindowManager.LayoutParams();
+        mLogParams = new WindowManager.LayoutParams();
         // 服务启动，打开自定义Toast的控件
         showRocketView();
         // 拖拽小火箭到任意位置
         dragRocket();
+        dragLog();
         super.onCreate();
+    }
+
+    private void dragLog() {
+        mToastLogView.setOnTouchListener(new View.OnTouchListener() {
+            private int startX;
+            private int startY;
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        startX = (int) event.getRawX();
+                        startY = (int) event.getRawY();
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        int moveX = (int) event.getRawX();
+                        int moveY = (int) event.getRawY();
+                        // 两个方向上所移动的距离值
+                        int disX = moveX - startX;
+                        int disY = moveY - startY;
+
+                        mLogParams.x = mLogParams.x + disX;
+                        mLogParams.y = mLogParams.y + disY;
+
+                        if (mLogParams.x < 0) {
+                            mLogParams.x = 0;
+                        }
+
+                        if (mLogParams.y < 0) {
+                            mLogParams.y = 0;
+                        }
+
+                        if (mLogParams.x > mWindowManager.getDefaultDisplay().getWidth() - v.getWidth()) {
+                            mLogParams.x = mWindowManager.getDefaultDisplay().getWidth() - v.getWidth();
+                        }
+
+                        if (mLogParams.y > mWindowManager.getDefaultDisplay().getHeight() - 21 - v.getHeight()) {
+                            mLogParams.y = mWindowManager.getDefaultDisplay().getHeight() - 21 - v.getHeight();
+                        }
+                        printLog(mLogParams);
+                        onLocationListener.onLocation(mLogParams);
+                        // 更新小火箭的坐标位置X和Y值
+                        mWindowManager.updateViewLayout(mToastLogView, mLogParams);
+
+                        startX = (int) event.getRawX();
+                        startY = (int) event.getRawY();
+
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        break;
+                }
+                return false;
+            }
+        });
+    }
+
+    private void printLog(WindowManager.LayoutParams mParams){
+        int n = mToastLogView.getChildCount();
+        if (n>0) {
+            TextView textView = (TextView) mToastLogView.getChildAt(0);
+            textView.setText(String.format("坐标: %d, %d", mParams.x, mParams.y));
+        }
     }
 
     /**
@@ -94,7 +178,7 @@ public class RocketService extends Service {
                         if (mParams.y > mWindowManager.getDefaultDisplay().getHeight() - 21 - v.getHeight()) {
                             mParams.y = mWindowManager.getDefaultDisplay().getHeight() - 21 - v.getHeight();
                         }
-
+                        onLocationListener.onLocation(mParams);
                         // 更新小火箭的坐标位置X和Y值
                         mWindowManager.updateViewLayout(mToastRocketView, mParams);
 
@@ -154,8 +238,12 @@ public class RocketService extends Service {
         mParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
         // 修改完左上角对齐
         mParams.gravity = Gravity.LEFT + Gravity.TOP;
-        mParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
+//        mParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+//                | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
+        //设置可以显示在状态栏上
+        mParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR |
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
         mParams.format = PixelFormat.TRANSLUCENT;
         mParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
         // 加载ToastRocketView显示效果的布局文件
@@ -166,11 +254,25 @@ public class RocketService extends Service {
         // 获取动画，并开启动画
         AnimationDrawable animDraw = (AnimationDrawable) mRocketImage.getBackground();
         animDraw.start();
+
+        mLogParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        mLogParams.gravity = Gravity.LEFT + Gravity.TOP;
+        mLogParams.format = PixelFormat.RGBA_8888;
+        //设置可以显示在状态栏上
+        mLogParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR |
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
+
+        //设置悬浮窗口长宽数据
+        mLogParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        mLogParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        mToastLogView = (LinearLayout) View.inflate(this, R.layout.toast_log_view, null);
+        mWindowManager.addView(mToastLogView, mLogParams);
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return new RocketBinder();
     }
 
     @Override

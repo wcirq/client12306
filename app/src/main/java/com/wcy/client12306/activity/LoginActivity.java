@@ -156,6 +156,12 @@ public class LoginActivity extends AppCompatActivity{
             }
         }).start();
 
+        if (isFrist){
+            startVideoService();
+        }
+    }
+
+    public void startVideoService() {
         mVideoServiceConnection = new ServiceConnection() {
 
             @Override
@@ -170,12 +176,6 @@ public class LoginActivity extends AppCompatActivity{
                 Log.d("", "");
             }
         };
-        if (isFrist){
-            startVideoService();
-        }
-    }
-
-    public void startVideoService() {
         moveTaskToBack(true);//最小化Activity
         intentService = new Intent(this, FloatVideoWindowService.class);//开启服务显示悬浮框
         bindService(intentService, mVideoServiceConnection, Context.BIND_AUTO_CREATE);
