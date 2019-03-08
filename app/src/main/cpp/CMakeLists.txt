@@ -10,6 +10,9 @@ cmake_minimum_required(VERSION 3.4.1)
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 
+file(GLOB image_deal_sources image_deal/*.cpp)
+include_directories(image_deal)
+add_library(image-lib SHARED ${image_deal_sources})
 add_library( # Sets the name of the library.
              native-lib
 
@@ -38,6 +41,7 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries( # Specifies the target library.
                        native-lib
+                       image-lib
 
                        # Links the target library to the log library
                        # included in the NDK.

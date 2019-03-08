@@ -6,9 +6,13 @@
     android:orientation="vertical">
     <TextView
         android:layout_width="320dp"
-        android:layout_height="240dp"
+        android:layout_height="20dp"
         android:textSize="18sp"
         android:textColor="@color/white"
         android:text="坐标"/>
+    <TextureView
+        android:layout_width="240dp"
+        android:layout_height="320dp"
+        android:layout_gravity="center_horizontal"/>
 
 </LinearLayout>

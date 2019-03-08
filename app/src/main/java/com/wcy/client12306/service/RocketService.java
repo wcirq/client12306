@@ -3,24 +3,48 @@ package com.wcy.client12306.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
+import android.graphics.SurfaceTexture;
+import android.graphics.YuvImage;
 import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.BitmapDrawable;
+import android.hardware.Camera;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
 import android.renderscript.ScriptGroup;
+import android.renderscript.ScriptIntrinsicYuvToRGB;
+import android.renderscript.Type;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.TextureView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.wcy.client12306.R;
 import com.wcy.client12306.activity.SmokeBackActivity;
 import com.wcy.client12306.inter.OnLocationListener;
+import com.wcy.client12306.util.ImageUtil;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
 public class RocketService extends Service {
     OnLocationListener onLocationListener;
@@ -39,6 +63,7 @@ public class RocketService extends Service {
     private int mWindowWidth;
     // 手机窗体的高度
     private int mWindowHeight;
+    private Camera mCamera;
 
     public void setOnLocationListener(OnLocationListener onLocationListener){
         this.onLocationListener = onLocationListener;
@@ -63,6 +88,7 @@ public class RocketService extends Service {
 
     @Override
     public void onCreate() {
+        super.onCreate();
         mWindowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         // 获取手机屏幕的宽高值
         mWindowWidth = mWindowManager.getDefaultDisplay().getWidth();
@@ -74,7 +100,113 @@ public class RocketService extends Service {
         // 拖拽小火箭到任意位置
         dragRocket();
         dragLog();
-        super.onCreate();
+        initCameras();
+    }
+
+    private void initCameras() {
+        int numberOfCameras = Camera.getNumberOfCameras();
+        if(numberOfCameras<1) {
+            Toast.makeText(this, "没有相机", Toast.LENGTH_SHORT).show();
+        }else {
+            int n = mToastLogView.getChildCount();
+            if (n>1) {
+                // 打开相机 0后置 1前置
+                mCamera = Camera.open(1);
+                TextureView textureView = (TextureView) mToastLogView.getChildAt(1);
+                textureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener(){
+
+                    @Override
+                    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+                        if (mCamera != null) {
+                            // 设置相机预览宽高，此处设置为TextureView宽高
+                            Camera.Parameters params = mCamera.getParameters();
+
+                            // 选择合适的预览尺寸
+                            List<Camera.Size> sizeList = params.getSupportedPreviewSizes();
+
+                            // 如果sizeList只有一个我们也没有必要做什么了，因为就他一个别无选择
+                            if (sizeList.size() > 1) {
+                                Iterator<Camera.Size> itor = sizeList.iterator();
+                                while (itor.hasNext()) {
+                                    Camera.Size cur = itor.next();
+                                    if (cur.width >= width
+                                            && cur.height >= height) {
+                                        width = cur.width;
+                                        height = cur.height;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            params.setPreviewSize(width, height);
+                            // 设置自动对焦模式
+                            List<String> focusModes = params.getSupportedFocusModes();
+                            if (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+                                params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                                mCamera.setParameters(params);
+                            }
+                            try {
+                                mCamera.setDisplayOrientation(90);// 设置预览角度，并不改变获取到的原始数据方向
+                                // 绑定相机和预览的View
+                                mCamera.setPreviewTexture(surface);
+                                // 开始预览
+                                mCamera.startPreview();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+                    }
+
+                    @Override
+                    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+                        mCamera.stopPreview();
+                        mCamera.release();
+                        return false;
+                    }
+
+                    @Override
+                    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+
+                    }
+                });
+                if (mCamera!=null){
+                    mCamera.setPreviewCallback(new Camera.PreviewCallback() {
+                        Bitmap bitmap=null;
+                        @Override
+                        public void onPreviewFrame(final byte[] data, Camera camera) {
+                            final Camera.Size size = camera.getParameters().getPreviewSize();
+                            Log.d("ImageUtil.isRun", String.valueOf(ImageUtil.isRun));
+                            if (ImageUtil.isRun){
+                                Runnable runable = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        bitmap = ImageUtil.convertYUV420SPToARGB4444(data, size.width, size.height);
+//                                        bitmap = ImageUtil.rotateBitmap(bitmap, 45f);
+                                    }
+                                };
+                                runable.run();
+                            }
+                            if (bitmap!=null){
+                                BitmapDrawable drawable= new BitmapDrawable(getResources(), bitmap);
+                                ImageView imageView = new ImageView(getApplicationContext());
+
+                                WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+                                params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+                                params.width = WindowManager.LayoutParams.WRAP_CONTENT;;
+                                imageView.setLayoutParams(params);
+                                imageView.setBackground(drawable);
+                                mToastLogView.addView(imageView);
+                            }
+                        }
+                    });
+                }
+            }
+        }
     }
 
     private void dragLog() {
