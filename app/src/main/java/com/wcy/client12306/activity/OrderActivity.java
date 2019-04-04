@@ -155,6 +155,9 @@ public class OrderActivity extends AppCompatActivity {
                             list.add(new Item(id+2+j, id+1, 2, false, String.format("%s - %s ￥%s\r\n%s车%s  %s", user_name, seat_type_name, str_ticket_price_page, coach_name, seat_name, ticket_status_name)));
                         }
                     }
+                    if (orderDTODataList.length()==0){
+                        list.add(new Item(0, 0, 0, false, "过去一个月内没有历史订单"));
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

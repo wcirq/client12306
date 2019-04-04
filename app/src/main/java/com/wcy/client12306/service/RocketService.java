@@ -180,7 +180,6 @@ public class RocketService extends Service {
                         @Override
                         public void onPreviewFrame(final byte[] data, Camera camera) {
                             final Camera.Size size = camera.getParameters().getPreviewSize();
-                            Log.d("ImageUtil.isRun", String.valueOf(ImageUtil.isRun));
                             if (ImageUtil.isRun){
                                 Runnable runable = new Runnable() {
                                     @Override

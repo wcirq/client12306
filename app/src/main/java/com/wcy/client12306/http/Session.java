@@ -88,8 +88,8 @@ public class Session implements Serializable {
                 httpURLConnection.setRequestProperty(key, headers.get(key));
             }
         } else {
-//            httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
-            httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0");
+            httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
+//            httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0");
         }
         return httpURLConnection;
     }
@@ -134,7 +134,11 @@ public class Session implements Serializable {
                     stringBuffer.append("\r\n");
                 }
                 String str = stringBuffer.toString();
+                if(str.contains("jQuery")) {
+                    str = str.split("\\(")[1].split("\\)")[0];
+                }
                 result = new JSONObject(str);
+
             } else if (httpURLConnection.getContentType().contains("text/html")|httpURLConnection.getContentType().contains("text/javascript")) {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"));
                 StringBuffer stringBuffer = new StringBuffer();

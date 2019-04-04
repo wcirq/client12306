@@ -8,7 +8,7 @@ import android.util.Log;
 import java.nio.ByteBuffer;
 
 public class ImageUtil {
-    static boolean useNativeConversion = true;
+    static boolean useNativeConversion = false;
     private static Bitmap bitmap = null;
     private static int[] rgbBytes = null;
     public static boolean isRun = true;
@@ -18,7 +18,7 @@ public class ImageUtil {
         System.loadLibrary("image-lib");
     }
 
-    public static Bitmap convertYUV420SPToARGB4444(byte[] input, int width, int height) {
+    public static Bitmap convertYUV420SPToARGB4444(byte[] yuv420sp, int width, int height) {
         if (useNativeConversion) {
             isRun = false;
             if (rgbBytes==null||rgbBytes.length!=width*height){
@@ -26,14 +26,16 @@ public class ImageUtil {
             }
             try {
                 long start = System.currentTimeMillis();
-                ImageUtil.convertYUV420SPToARGB8888(input, rgbBytes, width, height, false);
+                ImageUtil.convertYUV420SPToARGB8888(yuv420sp, rgbBytes, width, height, false);
+                long end = System.currentTimeMillis();
+                Log.d("time0", String.valueOf(end-start));
                 if (bitmap==null){
                     bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
                 }
                 bitmap.setPixels(rgbBytes, 0, width, 0, 0, width, height);
                 isRun = true;
-                long end = System.currentTimeMillis();
-                Log.d("time", String.valueOf(end-start));
+                end = System.currentTimeMillis();
+                Log.d("time1", String.valueOf(end-start));
                 return bitmap;
             } catch (UnsatisfiedLinkError e) {
                 Log.w("", "Native YUV420SP -> RGB implementation not found, falling back to Java implementation");
@@ -41,30 +43,30 @@ public class ImageUtil {
             }
         }else {
             long start = System.currentTimeMillis();
-            byte[] byteHeat1 = new byte[width*height*4];
+            byte[] argb = new byte[width*height*4];
             for(int i=0;i<width*height;i++){
                 int offset = width*height;
-                int y = ((int) input[i]&0xFF)-16;
-                int u = ((int) input[offset+i/4*2]&0xFF)-128;
-                int v = ((int) input[offset+i/4*2+1]&0xFF)-128;
-                int r = (int) (y+1.14*v);
-                int g = (int) (y-0.39*u-0.58*v);
-                int b = (int) (y+2.03*u);
+                int y = ((int) yuv420sp[i]&0xFF)-16;
+                int u = ((int) yuv420sp[offset+i/4*2]&0xFF)-128;
+                int v = ((int) yuv420sp[offset+i/4*2+1]&0xFF)-128;
+                int r = (int) (y+1.4075*v);
+                int g = (int) (y-0.3455*u-0.7169*v);
+                int b = (int) (y+1.779*u);
                 byte R = (byte) (Math.min(Math.max(r, 0), 255));
                 byte G = (byte) (Math.min(Math.max(g, 0), 255));
                 byte B = (byte) (Math.min(Math.max(b, 0), 255));
 
-                byteHeat1[i*4] = R;
-                byteHeat1[i*4+1] = G;
-                byteHeat1[i*4+2] = B;
-                byteHeat1[i*4+3] = (byte) (255*1.0);
+                argb[i*4] = R;
+                argb[i*4+1] = G;
+                argb[i*4+2] = B;
+                argb[i*4+3] = (byte) (255*1.0);
             }
             if (bitmap==null){
-                bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
+                bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             }
-            bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(byteHeat1));
+            bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(argb));
             long end = System.currentTimeMillis();
-            Log.d("time", String.valueOf(end-start));
+            Log.d("time11", String.valueOf(end-start));
             return bitmap;
         }
         return null;

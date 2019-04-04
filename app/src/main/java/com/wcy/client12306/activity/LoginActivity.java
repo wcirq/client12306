@@ -186,7 +186,7 @@ public class LoginActivity extends AppCompatActivity{
      * 获取验证码
      */
     private void getCaptcha() {
-        String url = "https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand&0.6523880813900003";
+        String url = "https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand&0.6523880813900003&callback=jQuery19103423450215919036_1554172702898&_=1554172702998";
         try {
             bitmap = (Bitmap) session.get(url, null);
             if (bitmap != null) {
@@ -227,7 +227,7 @@ public class LoginActivity extends AppCompatActivity{
     public void onClick(View view) {
         if (view.getId() == R.id.login) {
             message.setText("");
-            String url = "https://kyfw.12306.cn/passport/captcha/captcha-check?answer=%s&rand=sjrand&login_site=E";
+            String url = "https://kyfw.12306.cn/passport/captcha/captcha-check?answer=%s&rand=sjrand&login_site=E&callback=jQuery19103423450215919036_1554172702898&_=1554172702999";
             String[] data = {"35,35", "105,35", "175,35", "245,35", "35,105", "105,105", "175,105", "245,105"};
             StringBuilder answer = new StringBuilder();
             for (int i = 0; i < choose.length; i++) {
@@ -248,6 +248,7 @@ public class LoginActivity extends AppCompatActivity{
                 SuperEditTextView password = findViewById(R.id.password);
                 paramsMap.put("password", Objects.requireNonNull(password.getText()).toString());
                 paramsMap.put("appid", "otn");
+                paramsMap.put("answer", answer.toString());
 
                 new Thread(new Runnable() {
                     @Override
@@ -256,7 +257,27 @@ public class LoginActivity extends AppCompatActivity{
                             jsonObject = (JSONObject) session.get(finalUrl, null);
                             if (jsonObject.getInt("result_code")==4){
                                 String loginUrl = "https://kyfw.12306.cn/passport/web/login";
-                                jsonObject = (JSONObject) session.post(loginUrl, null, paramsMap);
+                                int again = 20; // 网络异常重试次数
+                                for (int i=0;i<again;i++) {
+                                    try {
+                                        jsonObject = (JSONObject) session.post(loginUrl, null, paramsMap);
+                                        break;
+                                    } catch (ClassCastException e) {
+                                        try {
+                                            Thread.sleep(500);
+                                        } catch (InterruptedException e1) {
+                                            e1.printStackTrace();
+                                        }
+                                        if (i==again-1){
+                                            jsonObject.put("result_message", "尝试太多次！12306服务器炸了！");
+                                            handler.sendEmptyMessage(2);
+                                            getCaptcha();
+                                        }else {
+                                            jsonObject.put("result_message", String.format("网络异常! 重试 [%d/%d] 次", i+1, again));
+                                            handler.sendEmptyMessage(2);
+                                        }
+                                    }
+                                }
                                 try {
                                     if (jsonObject.getInt("result_code")==0){
                                         dbHelper.delete(1);
@@ -287,7 +308,12 @@ public class LoginActivity extends AppCompatActivity{
 
                         }catch (ClassCastException e){
                             try {
+                                Log.e("登录失败", e.toString());
                                 Thread.sleep(1000);
+                                getCaptcha();
+                                Looper.prepare();
+                                Toast.makeText(getApplicationContext(), "登录失败！", Toast.LENGTH_SHORT).show();
+                                Looper.loop();
                             }catch (InterruptedException e1){
                                 e1.printStackTrace();
                             }
