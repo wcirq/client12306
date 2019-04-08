@@ -20,6 +20,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -165,6 +166,7 @@ public class Session implements Serializable {
         HttpURLConnection httpURLConnection=null;
         try {
             httpURLConnection = (HttpURLConnection) new URL(url).openConnection();
+            httpURLConnection.setConnectTimeout(5000);
             httpURLConnection = setRequestProperty(httpURLConnection, headers);
             httpURLConnection = setCookie(httpURLConnection);
             httpURLConnection.setRequestMethod("GET");
@@ -214,15 +216,21 @@ public class Session implements Serializable {
         HttpURLConnection httpURLConnection=null;
         try {
             httpURLConnection = (HttpURLConnection) new URL(url).openConnection();
+            httpURLConnection.setConnectTimeout(5000);
             httpURLConnection = setRequestProperty(httpURLConnection, headers);
             httpURLConnection = setCookie(httpURLConnection);
             httpURLConnection.setRequestMethod("POST");
             httpURLConnection.connect();
             httpURLConnection = setData(httpURLConnection, data);
+            Log.d("*****", "00000" +url);
             if (httpURLConnection.getResponseCode() == 200) {
+                Log.d("*****", "11111");
                 dealCookie(httpURLConnection);
                 result = dealResult(httpURLConnection);
             }
+        } catch (SocketTimeoutException e) {
+            Log.d("超时", e.toString());
+            return null;
         } catch (IOException e) {
             e.printStackTrace();
             return null;

@@ -222,76 +222,95 @@ public class BuyActivity extends AppCompatActivity {
                             Log.d("submitOrderRequest", resp.toString());
                             try {
                                 if (resp.getBoolean("status")){
-                                    url = "https://kyfw.12306.cn/otn/confirmPassenger/initDc";
-                                    HashMap<String, String> data = new HashMap<>();
-                                    data.put("_json_att","");
-                                    String html = (String) session.post(url, null, data);
-                                    String globalRepeatSubmitToken = Crawler.getMatcher(html, "globalRepeatSubmitToken = '(.*?)';").get(0);
-                                    String key_check_isChange = Crawler.getMatcher(html, "'key_check_isChange':'(.*?)'").get(0);
-                                    String purpose_codes = Crawler.getMatcher(html, "'purpose_codes':'(.*?)'").get(0);
+                                    if (resp.getString("data").equals("N")){
+//                                        HashMap<String, String> args = new HashMap<>();
+//
+//
+//                                        args.clear();
+//                                        args.put("passengerTicketStr", "");
+//                                        args.put("oldPassengerStr", "");
+//                                        args.put("REPEAT_SUBMIT_TOKEN", "");
+//                                        args.put("randCode", "");
+//                                        args.put("cancel_flag", "2");
+//                                        args.put("canbed_level_order_numcel_flag", "000000000000000000000000000000");
+//                                        args.put("tour_flag", "dc");
+//                                        args.put("_json_att", "");
+//                                        url = "https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo";
+//                                        session.post(url, null, args);
 
-                                    url = "https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs";
-                                    data.clear();
-                                    data.put("_json_att","");
-                                    data.put("REPEAT_SUBMIT_TOKEN",globalRepeatSubmitToken);
-                                    JSONObject res = (JSONObject) session.post(url, null, data);
-                                    Log.d("getPassengerDTOs", res.toString());
+                                        url = "https://kyfw.12306.cn/otn/confirmPassenger/initDc";
+                                        HashMap<String, String> data = new HashMap<>();
+                                        data.put("_json_att","");
+                                        String html = (String) session.post(url, null, data);
+                                        String globalRepeatSubmitToken = Crawler.getMatcher(html, "globalRepeatSubmitToken = '(.*?)';").get(0);
+                                        String key_check_isChange = Crawler.getMatcher(html, "'key_check_isChange':'(.*?)'").get(0);
+                                        String purpose_codes = Crawler.getMatcher(html, "'purpose_codes':'(.*?)'").get(0);
 
-                                    url = "https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo";
-                                    data.clear();
-                                    data.put("cancel_flag","2");
-                                    data.put("bed_level_order_num","000000000000000000000000000000");
-                                    /*passengerTicketStr组成的格式：seatType,0,票类型（成人票填1）,乘客名,passenger_id_type_code,passenger_id_no,mobile_no,’N’
-                                    多个乘车人用’_’隔开
-                                    oldPassengerStr组成的格式：乘客名,passenger_id_type_code,passenger_id_no,passenger_type，’_’
-                                    多个乘车人用’_’隔开，注意最后的需要多加一个’_’。*/
-                                    data.put("passengerTicketStr","O,0,1,吴臣杨,1,522631199402283114,18685134228,N");
-                                    data.put("oldPassengerStr","吴臣杨,1,522631199402283114,1_");
-                                    data.put("tour_flag","dc");
-                                    data.put("randCode","");
-                                    data.put("whatsSelect","1");
-                                    data.put("_json_att","");
-                                    data.put("REPEAT_SUBMIT_TOKEN",globalRepeatSubmitToken);
-                                    JSONObject json = (JSONObject) session.post(url, null, data);
-                                    Log.d("checkOrderInfo", json.toString());
-                                    if (json.getJSONObject("data").getBoolean("submitStatus")){
-                                        url = "https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount";
+                                        url = "https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs";
                                         data.clear();
-                                        DateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
-                                        String date_parse = sf.parse(date).toString();
-                                        date_parse = date_parse.substring(0,11)+date_parse.substring(30,date_parse.length())+" 00:00:00 GMT+0800 (中国标准时间)";
-//                                        date_parse = date_parse.replace(" ", "+");
-                                        data.put("train_date",date_parse);
-                                        data.put("train_no",ticketArrays.get(position)[2]);
-                                        data.put("stationTrainCode",ticketArrays.get(position)[3]);
-                                    /*  ‘硬卧’ => ‘3’,
-                                        ‘软卧’ => ‘4’,
-                                        ‘二等座’ => ‘O’,
-                                        ‘一等座’ => ‘M’,
-                                        ‘硬座’ => ‘1’,*/
-                                        data.put("seatType","O");
-                                        data.put("fromStationTelecode",ticketArrays.get(position)[6]);
-                                        data.put("toStationTelecode",ticketArrays.get(position)[7]);
-                                        data.put("leftTicket",ticketArrays.get(position)[12]);
-                                        data.put("purpose_codes",purpose_codes);
-                                        data.put("train_location",ticketArrays.get(position)[15]);
                                         data.put("_json_att","");
                                         data.put("REPEAT_SUBMIT_TOKEN",globalRepeatSubmitToken);
-                                        HashMap<String, HashMap<String, String>> cookies = new HashMap<>();
-                                        HashMap<String, String> cookie = new HashMap<>();
-                                        cookie.put("_jc_save_fromDate", "2019-04-01");
-                                        cookie.put("_jc_save_fromStation", "北京,BJP");
-                                        cookie.put("_jc_save_showIns", "true");
-                                        cookie.put("_jc_save_toDate", "2019-03-06");
-                                        cookie.put("_jc_save_toStation", "上海,SHH");
-                                        cookie.put("_jc_save_wfdc_flag", "dc");
-                                        cookies.put("/otn", cookie);
-                                        session.addCookies(cookies);
-                                        json = (JSONObject) session.post(url, null, data);
-                                        Log.d("getQueueCount", json.toString());
-                                        Looper.prepare();
-                                        Toast.makeText(BuyActivity.this, json.toString(), Toast.LENGTH_SHORT).show();
-                                        Looper.loop();
+                                        JSONObject res = (JSONObject) session.post(url, null, data);
+                                        Log.d("getPassengerDTOs", res.toString());
+
+                                        url = "https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo";
+                                        data.clear();
+                                        data.put("cancel_flag","2");
+                                        data.put("bed_level_order_num","000000000000000000000000000000");
+                                        /*passengerTicketStr组成的格式：seatType,0,票类型（成人票填1）,乘客名,passenger_id_type_code,passenger_id_no,mobile_no,’N’
+                                        多个乘车人用’_’隔开
+                                        oldPassengerStr组成的格式：乘客名,passenger_id_type_code,passenger_id_no,passenger_type，’_’
+                                        多个乘车人用’_’隔开，注意最后的需要多加一个’_’。*/
+                                        data.put("passengerTicketStr","O,0,1,吴臣杨,1,522631199402283114,18685134228,N");
+                                        data.put("oldPassengerStr","吴臣杨,1,522631199402283114,1_");
+                                        data.put("tour_flag","dc");
+                                        data.put("randCode","");
+                                        data.put("whatsSelect","1");
+                                        data.put("_json_att","");
+                                        data.put("REPEAT_SUBMIT_TOKEN",globalRepeatSubmitToken);
+                                        JSONObject json = (JSONObject) session.post(url, null, data);
+                                        Log.d("checkOrderInfo", json.toString());
+                                        if (json.getJSONObject("data").getBoolean("submitStatus")){
+                                            url = "https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount";
+                                            data.clear();
+                                            DateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
+                                            String date_parse = sf.parse(date).toString();
+                                            date_parse = date_parse.substring(0,11)+date_parse.substring(30,date_parse.length())+" 00:00:00 GMT+0800 (中国标准时间)";
+                                            // date_parse = date_parse.replace(" ", "+");
+                                            data.put("train_date",date_parse);
+                                            data.put("train_no",ticketArrays.get(position)[2]);
+                                            data.put("stationTrainCode",ticketArrays.get(position)[3]);
+                                            /*  ‘硬卧’ => ‘3’,
+                                                ‘软卧’ => ‘4’,
+                                                ‘二等座’ => ‘O’,
+                                                ‘一等座’ => ‘M’,
+                                                ‘硬座’ => ‘1’,*/
+                                            data.put("seatType","O");
+                                            data.put("fromStationTelecode",ticketArrays.get(position)[6]);
+                                            data.put("toStationTelecode",ticketArrays.get(position)[7]);
+                                            data.put("leftTicket",ticketArrays.get(position)[12]);
+                                            data.put("purpose_codes",purpose_codes);
+                                            data.put("train_location",ticketArrays.get(position)[15]);
+                                            data.put("_json_att","");
+                                            data.put("REPEAT_SUBMIT_TOKEN",globalRepeatSubmitToken);
+                                            HashMap<String, HashMap<String, String>> cookies = new HashMap<>();
+                                            HashMap<String, String> cookie = new HashMap<>();
+                                            cookie.put("_jc_save_fromDate", "2019-04-01");
+                                            cookie.put("_jc_save_fromStation", "北京,BJP");
+                                            cookie.put("_jc_save_showIns", "true");
+                                            cookie.put("_jc_save_toDate", "2019-03-06");
+                                            cookie.put("_jc_save_toStation", "上海,SHH");
+                                            cookie.put("_jc_save_wfdc_flag", "dc");
+                                            cookies.put("/otn", cookie);
+                                            session.addCookies(cookies);
+                                            json = (JSONObject) session.post(url, null, data);
+                                            Log.d("getQueueCount", json.toString());
+                                            Looper.prepare();
+                                            Toast.makeText(BuyActivity.this, json.toString(), Toast.LENGTH_SHORT).show();
+                                            Looper.loop();
+                                    }
+
+
                                     }
                                     Log.d("","");
                                 }

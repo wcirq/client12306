@@ -60,6 +60,7 @@ public class LoginActivity extends AppCompatActivity{
     String userInfoPath;
     ServiceConnection mVideoServiceConnection;
     Intent intentService;
+    boolean IsNeedCaptcha = true;
 
     public LoginActivity() {
     }
@@ -181,156 +182,218 @@ public class LoginActivity extends AppCompatActivity{
         bindService(intentService, mVideoServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
+    private boolean isNeedCaptcha(){
+        JSONObject result = (JSONObject) session.post("https://kyfw.12306.cn/otn/login/conf", null, null);
+        try {
+            String isNeedCaptcha = result.getJSONObject("data").getString("is_login_passCode");
+            if (isNeedCaptcha.equals("N")){
+                return false;
+            }else {
+                return true;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return true;
+        }
+    }
 
     /**
      * 获取验证码
      */
     private void getCaptcha() {
-        String url = "https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand&0.6523880813900003&callback=jQuery19103423450215919036_1554172702898&_=1554172702998";
-        try {
-            bitmap = (Bitmap) session.get(url, null);
-            if (bitmap != null) {
-                bitmaps = new ArrayList<Bitmap>();
-                for (int i = 0; i < 9; i++) {
-                    Bitmap bmp = null;
-                    if (i == 0) {
-                        bmp = Bitmap.createBitmap(bitmap, 0, 0, 293, 28);
+        while (true) {
+            if (isNeedCaptcha()) {
+                IsNeedCaptcha = true;
+                Log.d("是否需要验证码", "需要");
+                // 需要验证码
+                String url = "https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand&0.6523880813900003&callback=jQuery19103423450215919036_1554172702898&_=1554172702998";
+                try {
+                    bitmap = (Bitmap) session.get(url, null);
+                    if (bitmap != null) {
+                        bitmaps = new ArrayList<Bitmap>();
+                        for (int i = 0; i < 9; i++) {
+                            Bitmap bmp = null;
+                            if (i == 0) {
+                                bmp = Bitmap.createBitmap(bitmap, 0, 0, 293, 28);
+                            } else {
+                                int j = i - 1;
+                                int col = j % 4;
+                                int row = (int) j / 4;
+                                int x = col * 72 + 3;
+                                int y = row * 72 + 39;
+                                int w = 72;
+                                int h = 72;
+                                bmp = Bitmap.createBitmap(bitmap, x, y, w, h);
+                                Log.d("", "");
+                            }
+                            bitmaps.add(bmp);
+                        }
+                        handler.sendEmptyMessage(1);
+                        break;
                     } else {
-                        int j = i - 1;
-                        int col = j % 4;
-                        int row = (int) j / 4;
-                        int x = col * 72 + 3;
-                        int y = row * 72 + 39;
-                        int w = 72;
-                        int h = 72;
-                        bmp = Bitmap.createBitmap(bitmap, x, y, w, h);
-                        Log.d("", "");
+                        Looper.prepare();
+                        Toast.makeText(getApplicationContext(), "无法连接网络！", Toast.LENGTH_SHORT).show();
+                        Looper.loop();
                     }
-                    bitmaps.add(bmp);
+                } catch (ClassCastException e) {
+                    try {
+                        Thread.sleep((long) 1000);
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
                 }
-                handler.sendEmptyMessage(1);
-            } else {
-                Looper.prepare();
-                Toast.makeText(getApplicationContext(), "无法连接网络！", Toast.LENGTH_SHORT).show();
-                Looper.loop();
+            }else {
+                // 不需要验证码
+                IsNeedCaptcha = false;
+                if (jsonObject==null){
+                    jsonObject = new JSONObject();
+                }
+                try {
+                    jsonObject.put("result_message", "无需验证验证码！");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                handler.sendEmptyMessage(2);
+                Log.d("是否需要验证码", "不需要");
+                break;
             }
-        }catch (ClassCastException e){
-            try {
-                Thread.sleep((long) 1000);
-            } catch (InterruptedException e1) {
-                e1.printStackTrace();
-            }
-            getCaptcha();
         }
     }
 
     public void onClick(View view) {
         if (view.getId() == R.id.login) {
-            message.setText("");
-            String url = "https://kyfw.12306.cn/passport/captcha/captcha-check?answer=%s&rand=sjrand&login_site=E&callback=jQuery19103423450215919036_1554172702898&_=1554172702999";
-            String[] data = {"35,35", "105,35", "175,35", "245,35", "35,105", "105,105", "175,105", "245,105"};
-            StringBuilder answer = new StringBuilder();
-            for (int i = 0; i < choose.length; i++) {
-                if (choose[i] == 1) {
-                    answer.append(",").append(data[i]);
-                }
-            }
-            if (!answer.toString().equals("")) {
-                //去除第一个字符
-                answer.deleteCharAt(0);
-                String answerStr = answer.toString().replace(",", "%2C");
-                url = String.format(url, answerStr);
-                final String finalUrl = url;
-
-                final HashMap<String, String> paramsMap = new HashMap<>();
-                SuperEditTextView userName = findViewById(R.id.userName);
-                paramsMap.put("username", Objects.requireNonNull(userName.getText()).toString());
-                SuperEditTextView password = findViewById(R.id.password);
-                paramsMap.put("password", Objects.requireNonNull(password.getText()).toString());
-                paramsMap.put("appid", "otn");
-                paramsMap.put("answer", answer.toString());
-
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try{
-                            jsonObject = (JSONObject) session.get(finalUrl, null);
-                            if (jsonObject.getInt("result_code")==4){
-                                String loginUrl = "https://kyfw.12306.cn/passport/web/login";
-                                int again = 20; // 网络异常重试次数
-                                for (int i=0;i<again;i++) {
-                                    try {
-                                        jsonObject = (JSONObject) session.post(loginUrl, null, paramsMap);
-                                        break;
-                                    } catch (ClassCastException e) {
-                                        try {
-                                            Thread.sleep(500);
-                                        } catch (InterruptedException e1) {
-                                            e1.printStackTrace();
-                                        }
-                                        if (i==again-1){
-                                            jsonObject.put("result_message", "尝试太多次！12306服务器炸了！");
-                                            handler.sendEmptyMessage(2);
-                                            getCaptcha();
-                                        }else {
-                                            jsonObject.put("result_message", String.format("网络异常! 重试 [%d/%d] 次", i+1, again));
-                                            handler.sendEmptyMessage(2);
-                                        }
-                                    }
-                                }
-                                try {
-                                    if (jsonObject.getInt("result_code")==0){
-                                        dbHelper.delete(1);
-                                        dbHelper.insert(paramsMap.get("username"), paramsMap.get("password"));
-                                        Session.dump(session, userInfoPath);
-                                        MessageUtil messageUtil = new MessageUtil();
-                                        messageUtil.setMessStr(jsonObject.getString("uamtk"));
-                                        Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
-                                        intent.putExtra("session", session);
-                                        intent.putExtra("messageUtil", messageUtil);
-                                        startActivity(intent);
-                                        finish();
-                                    }else {
-                                        if (jsonObject.getInt("result_code")==5){
-                                            //验证码校验失败
-                                            getCaptcha();
-                                        }
-                                        Log.d("jsonObject", jsonObject.toString());
-                                        handler.sendEmptyMessage(2);
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }else {
-                                getCaptcha();
-                                handler.sendEmptyMessage(2);
-                            }
-
-                        }catch (ClassCastException e){
-                            try {
-                                Log.e("登录失败", e.toString());
-                                Thread.sleep(1000);
-                                getCaptcha();
-                                Looper.prepare();
-                                Toast.makeText(getApplicationContext(), "登录失败！", Toast.LENGTH_SHORT).show();
-                                Looper.loop();
-                            }catch (InterruptedException e1){
-                                e1.printStackTrace();
-                            }
-                            e.printStackTrace();
-                            getCaptcha();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        } catch (NullPointerException e){
-                            e.printStackTrace();
-                            Looper.prepare();
-                            Toast.makeText(getApplicationContext(), "无法连接网络！", Toast.LENGTH_SHORT).show();
-                            Looper.loop();
-                        }
+            SuperEditTextView userName = findViewById(R.id.userName);
+            SuperEditTextView password = findViewById(R.id.password);
+            if (IsNeedCaptcha) {
+                message.setText("");
+                String url = "https://kyfw.12306.cn/passport/captcha/captcha-check?answer=%s&rand=sjrand&login_site=E&callback=jQuery19103423450215919036_1554172702898&_=1554172702999";
+                String[] data = {"35,35", "105,35", "175,35", "245,35", "35,105", "105,105", "175,105", "245,105"};
+                StringBuilder answer = new StringBuilder();
+                for (int i = 0; i < choose.length; i++) {
+                    if (choose[i] == 1) {
+                        answer.append(",").append(data[i]);
                     }
-                }).start();
+                }
+                if (!answer.toString().equals("")) {
+                    //去除第一个字符
+                    answer.deleteCharAt(0);
+                    String answerStr = answer.toString().replace(",", "%2C");
+                    url = String.format(url, answerStr);
+                    final String finalUrl = url;
+
+                    final HashMap<String, String> paramsMap = new HashMap<>();
+                    paramsMap.put("username", Objects.requireNonNull(userName.getText()).toString());
+                    paramsMap.put("password", Objects.requireNonNull(password.getText()).toString());
+                    paramsMap.put("appid", "otn");
+                    paramsMap.put("answer", answer.toString());
+
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                jsonObject = (JSONObject) session.get(finalUrl, null);
+                                if (jsonObject.getInt("result_code") == 4) {
+                                    String loginUrl = "https://kyfw.12306.cn/passport/web/login";
+                                    int again = 20; // 网络异常重试次数
+                                    for (int i = 0; i < again; i++) {
+                                        try {
+                                            jsonObject = (JSONObject) session.post(loginUrl, null, paramsMap);
+                                            break;
+                                        } catch (ClassCastException e) {
+                                            try {
+                                                Thread.sleep(500);
+                                            } catch (InterruptedException e1) {
+                                                e1.printStackTrace();
+                                            }
+                                            if (i == again - 1) {
+                                                jsonObject.put("result_message", "尝试太多次！12306服务器炸了！");
+                                                handler.sendEmptyMessage(2);
+                                                getCaptcha();
+                                            } else {
+                                                jsonObject.put("result_message", String.format("网络异常! 重试 [%d/%d] 次", i + 1, again));
+                                                handler.sendEmptyMessage(2);
+                                            }
+                                        }
+                                    }
+                                    try {
+                                        if (jsonObject.getInt("result_code") == 0) {
+                                            dbHelper.delete(1);
+                                            dbHelper.insert(paramsMap.get("username"), paramsMap.get("password"));
+                                            Session.dump(session, userInfoPath);
+                                            MessageUtil messageUtil = new MessageUtil();
+                                            messageUtil.setMessStr(jsonObject.getString("uamtk"));
+                                            Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                                            intent.putExtra("session", session);
+                                            intent.putExtra("messageUtil", messageUtil);
+                                            startActivity(intent);
+                                            finish();
+                                        } else {
+                                            if (jsonObject.getInt("result_code") == 5) {
+                                                //验证码校验失败
+                                                getCaptcha();
+                                            }
+                                            Log.d("jsonObject", jsonObject.toString());
+                                            handler.sendEmptyMessage(2);
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                } else {
+                                    getCaptcha();
+                                    handler.sendEmptyMessage(2);
+                                }
+
+                            } catch (ClassCastException e) {
+                                try {
+                                    Log.e("登录失败", e.toString());
+                                    Thread.sleep(1000);
+                                    getCaptcha();
+                                    Looper.prepare();
+                                    Toast.makeText(getApplicationContext(), "登录失败！", Toast.LENGTH_SHORT).show();
+                                    Looper.loop();
+                                } catch (InterruptedException e1) {
+                                    e1.printStackTrace();
+                                }
+                                e.printStackTrace();
+                                getCaptcha();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            } catch (NullPointerException e) {
+                                e.printStackTrace();
+                                Looper.prepare();
+                                Toast.makeText(getApplicationContext(), "无法连接网络！", Toast.LENGTH_SHORT).show();
+                                Looper.loop();
+                            }
+                        }
+                    }).start();
+                } else {
+                    Toast.makeText(getApplicationContext(), "请选择图片！", Toast.LENGTH_SHORT).show();
+                }
             }else {
-                Toast.makeText(getApplicationContext(), "请选择图片！", Toast.LENGTH_SHORT).show();
+                final HashMap<String, String> paramsMap = new HashMap<>();
+                paramsMap.put("loginUserDTO.user_name", Objects.requireNonNull(userName.getText()).toString());
+                paramsMap.put("userDTO.password", Objects.requireNonNull(password.getText()).toString());
+                jsonObject = (JSONObject) session.post("", null, paramsMap);
+                try {
+                    String isY = jsonObject.getJSONObject("data").getString("loginCheck");
+                    if (isY.equals("Y")){
+                        dbHelper.delete(1);
+                        dbHelper.insert(paramsMap.get("loginUserDTO.user_name"), paramsMap.get("userDTO.password"));
+                        Session.dump(session, userInfoPath);
+                        MessageUtil messageUtil = new MessageUtil();
+                        messageUtil.setMessStr("NotNeedCaptcha");
+                        Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                        intent.putExtra("session", session);
+                        intent.putExtra("messageUtil", messageUtil);
+                        startActivity(intent);
+                        finish();
+                    }else {
+                        jsonObject.put("result_message", jsonObject.get("messages") + "\t" + jsonObject.getString("validateMessages"));
+                        handler.sendEmptyMessage(2);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }else if (view.getId() == R.id.refresh) {
             new Thread(new Runnable() {
