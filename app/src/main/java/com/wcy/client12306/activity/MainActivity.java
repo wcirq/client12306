@@ -4,13 +4,17 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Uri;
+import android.os.Build;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.wcy.client12306.R;
 import com.wcy.client12306.inter.OnLocationListener;
@@ -34,6 +38,14 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().hide(); // 继承的是AppCompatActivity时
         }
         setContentView(R.layout.activity_main);
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (! Settings.canDrawOverlays(this)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName()));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivityForResult(intent,10);
+            }
+        }
         tv = findViewById(R.id.sample_text);
         tv.setText(stringFromJNI());
         initView();
@@ -75,6 +87,20 @@ public class MainActivity extends AppCompatActivity {
                 stopService(intent);
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 10) {
+            if (Build.VERSION.SDK_INT >= 23) {
+                if (!Settings.canDrawOverlays(this)) {
+                    // SYSTEM_ALERT_WINDOW permission not granted...
+                    Toast.makeText(MainActivity.this,"没有授予权限",Toast.LENGTH_SHORT).show();
+                }else {
+                    Toast.makeText(MainActivity.this,"授权成功",Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
     }
 
     /**

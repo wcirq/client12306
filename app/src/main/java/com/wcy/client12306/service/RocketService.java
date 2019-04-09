@@ -111,7 +111,7 @@ public class RocketService extends Service {
             int n = mToastLogView.getChildCount();
             if (n>1) {
                 // 打开相机 0后置 1前置
-                mCamera = Camera.open(1);
+                mCamera = Camera.open(0);
                 TextureView textureView = (TextureView) mToastLogView.getChildAt(1);
                 textureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener(){
 
