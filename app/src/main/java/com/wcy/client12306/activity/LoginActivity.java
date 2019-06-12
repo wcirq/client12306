@@ -26,7 +26,9 @@ import com.wcy.client12306.http.Session;
 import com.wcy.client12306.service.FloatVideoWindowService;
 import com.wcy.client12306.service.RocketService;
 import com.wcy.client12306.ui.SuperEditTextView;
+import com.wcy.client12306.util.ClassifyModel;
 import com.wcy.client12306.util.MessageUtil;
+import com.wcy.client12306.util.OcrModel;
 import com.wcy.client12306.util.SystemUtil;
 import com.wcy.client12306.util.ImageUtil;
 
@@ -61,6 +63,8 @@ public class LoginActivity extends AppCompatActivity{
     ServiceConnection mVideoServiceConnection;
     Intent intentService;
     boolean IsNeedCaptcha = true;
+    OcrModel ocrModel;
+    ClassifyModel classifyModel;
 
     public LoginActivity() {
     }
@@ -156,7 +160,8 @@ public class LoginActivity extends AppCompatActivity{
                 getCaptcha();
             }
         }).start();
-
+        ocrModel = new OcrModel(getAssets());
+        classifyModel = new ClassifyModel(getAssets());
         if (isFrist){
             startVideoService();
         }
@@ -248,6 +253,14 @@ public class LoginActivity extends AppCompatActivity{
                             }
                             bitmaps.add(bmp);
                         }
+                        Bitmap inputImage = Bitmap.createBitmap(bitmap, 120, 3, 57, 19);
+                        ocrModel.predict(inputImage);
+                        for (int i=1;i<=8;i++){
+                            if(classifyModel!=null) {
+                                classifyModel.predict(bitmaps.get(i));
+                            }
+                        }
+
                         handler.sendEmptyMessage(1);
                         break;
                     } else {

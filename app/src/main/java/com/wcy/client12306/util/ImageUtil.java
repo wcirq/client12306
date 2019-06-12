@@ -1,10 +1,14 @@
 package com.wcy.client12306.util;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.os.SystemClock;
 import android.util.Log;
 
+import org.json.JSONObject;
+
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 public class ImageUtil {
@@ -197,6 +201,188 @@ public class ImageUtil {
         }
         sourceImg = Bitmap.createBitmap(argb, sourceImg.getWidth(), sourceImg.getHeight(), Bitmap.Config.ARGB_8888);
         return sourceImg;
+    }
 
+    public static Matrix getTransformationMatrix(
+            final int srcWidth,
+            final int srcHeight,
+            final int dstWidth,
+            final int dstHeight,
+            final int applyRotation,
+            final boolean maintainAspectRatio) {
+        final Matrix matrix = new Matrix();
+
+        if (applyRotation != 0) {
+            // Translate so center of image is at origin.
+            matrix.postTranslate(-srcWidth / 2.0f, -srcHeight / 2.0f);
+
+            // Rotate around origin.
+            matrix.postRotate(applyRotation);
+        }
+
+        // Account for the already applied rotation, if any, and then determine how
+        // much scaling is needed for each axis.
+        final boolean transpose = (Math.abs(applyRotation) + 90) % 180 == 0;
+
+        final int inWidth = transpose ? srcHeight : srcWidth;
+        final int inHeight = transpose ? srcWidth : srcHeight;
+
+        // Apply scaling if necessary.
+        if (inWidth != dstWidth || inHeight != dstHeight) {
+            final float scaleFactorX = dstWidth / (float) inWidth;
+            final float scaleFactorY = dstHeight / (float) inHeight;
+
+            if (maintainAspectRatio) {
+                // Scale by minimum factor so that dst is filled completely while
+                // maintaining the aspect ratio. Some image may fall off the edge.
+                final float scaleFactor = Math.max(scaleFactorX, scaleFactorY);
+                matrix.postScale(scaleFactor, scaleFactor);
+            } else {
+                // Scale exactly to fill dst from src.
+                matrix.postScale(scaleFactorX, scaleFactorY);
+            }
+        }
+
+        if (applyRotation != 0) {
+            // Translate back from origin centered reference to destination frame.
+            matrix.postTranslate(dstWidth / 2.0f, dstHeight / 2.0f);
+        }
+
+        return matrix;
+    }
+
+
+    public static Bitmap processBitmap(Bitmap source,int width, int height){
+
+        int image_height = source.getHeight();
+        int image_width = source.getWidth();
+
+        Bitmap croppedBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+        Matrix frameToCropTransformations = getTransformationMatrix(image_width,image_height,width, height,0,false);
+        Matrix cropToFrameTransformations = new Matrix();
+        frameToCropTransformations.invert(cropToFrameTransformations);
+
+        final Canvas canvas = new Canvas(croppedBitmap);
+        canvas.drawBitmap(source, frameToCropTransformations, null);
+
+        return croppedBitmap;
+
+
+    }
+
+    public static Bitmap convertGreyImg(Bitmap img) {
+        int width = img.getWidth();			//获取位图的宽
+        int height = img.getHeight();		//获取位图的高
+
+        int []pixels = new int[width * height];	//通过位图的大小创建像素点数组
+
+        img.getPixels(pixels, 0, width, 0, 0, width, height);
+        int alpha = 0xFF << 24;
+        for(int i = 0; i < height; i++)	{
+            for(int j = 0; j < width; j++) {
+                int grey = pixels[width * i + j];
+
+                int red = ((grey  & 0x00FF0000 ) >> 16);
+                int green = ((grey & 0x0000FF00) >> 8);
+                int blue = (grey & 0x000000FF);
+
+                grey = (int)((float) red * 0.3 + (float)green * 0.59 + (float)blue * 0.11);
+                grey = alpha | (grey << 16) | (grey << 8) | grey;
+                pixels[width * i + j] = grey;
+            }
+        }
+        Bitmap result = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        result.setPixels(pixels, 0, width, 0, 0, width, height);
+        return result;
+    }
+
+    public static float[] dealImage(Bitmap img) {
+        int width = img.getWidth();			//获取位图的宽
+        int height = img.getHeight();		//获取位图的高
+        int []pixels = new int[width * height];	//通过位图的大小创建像素点数组
+        img.getPixels(pixels, 0, width, 0, 0, width, height);
+        float []ouput = new float[width * height];	//通过位图的大小创建像素点数组
+        int alpha = 0xFF << 24;
+        for(int i = 0; i < height; i++)	{
+            for(int j = 0; j < width; j++) {
+                int grey = pixels[width * i + j];
+
+                int red = ((grey  & 0x00FF0000 ) >> 16);
+                int green = ((grey & 0x0000FF00) >> 8);
+                int blue = (grey & 0x000000FF);
+
+                grey = (int)((float) red * 0.3 + (float)green * 0.59 + (float)blue * 0.11);
+                ouput[width * i + j] = grey/255.0f;
+            }
+        }
+        return ouput;
+    }
+
+    public static float[] normalizeBitmap(Bitmap source,int width, int height,float mean,float std){
+
+        float[] output = new float[width * height * 3];
+
+        int[] intValues = new int[source.getHeight() * source.getWidth()];
+
+        source.getPixels(intValues, 0, source.getWidth(), 0, 0, source.getWidth(), source.getHeight());
+        for (int i = 0; i < intValues.length; ++i) {
+            final int val = intValues[i];
+            output[i * 3] = ((val >> 16) & 0xFF)/255.0f;
+            output[i * 3 + 1] = ((val >> 8) & 0xFF)/255.0f;
+            output[i * 3 + 2] = (val & 0xFF)/255.0f;
+        }
+
+        return output;
+
+    }
+
+    public static Object[] argmax(float[] array){
+
+
+        int best = -1;
+        float best_confidence = 0.0f;
+
+        for(int i = 0;i < array.length;i++){
+
+            float value = array[i];
+
+            if (value > best_confidence){
+
+                best_confidence = value;
+                best = i;
+            }
+        }
+
+
+
+        return new Object[]{best,best_confidence};
+
+
+    }
+
+
+    public static String getLabel(InputStream jsonStream, int index){
+        String label = "";
+        try {
+
+            byte[] jsonData = new byte[jsonStream.available()];
+            jsonStream.read(jsonData);
+            jsonStream.close();
+
+            String jsonString = new String(jsonData,"utf-8");
+
+            JSONObject object = new JSONObject(jsonString);
+
+            label = object.getString(String.valueOf(index));
+
+
+
+        }
+        catch (Exception e){
+
+
+        }
+        return label;
     }
 }
