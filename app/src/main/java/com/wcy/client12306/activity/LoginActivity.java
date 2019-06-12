@@ -203,10 +203,30 @@ public class LoginActivity extends AppCompatActivity{
     private void getCaptcha() {
         while (true) {
             if (isNeedCaptcha()) {
+                auth();
+                String url = "https://kyfw.12306.cn/otn/HttpZF/logdevice?algID=3yxNoRW8BM&hashCode=8EFUGZrjK3cO8VdDugvPxyyiUqMNmKhl6pbW1ftnEVI&FMQw=0&q4f3=zh-CN&VPIf=1&custID=133&VEek=unknown&dzuS=0&yD16=0&EOQP=c227b88b01f5c513710d4b9f16a5ce52&lEnu=2887005765&jp76=52d67b2a5aa5e031084733d5006cc664&hAqN=MacIntel&platform=WEB&ks0Q=d22ca0b81584fbea62237b14bd04c866&TeRS=1013x1920&tOHY=24xx1080x1920&Fvje=i1l1o1s1&q5aJ=-8&wNLf=99115dfb07133750ba677d055874de87&0aew=Mozilla/5.0%20(Macintosh;%20Intel%20Mac%20OS%20X%2010_14_4)%20AppleWebKit/537.36%20(KHTML,%20like%20Gecko)%20Chrome/74.0.3729.131%20Safari/537.36&E3gR=d4c1ccb1725a4a45cc350f16ac26f32b&timestamp=";
+                long time = System.currentTimeMillis();
+                url = url+time;
+                HashMap<String, String> headers = new HashMap<>();
+                headers.put("Referer", "https://kyfw.12306.cn/otn/passport?redirect=/otn/");
+                headers.put("Host", "kyfw.12306.cn");
+                JSONObject devicesIdRsp = (JSONObject) session.get(url,headers);
+                String devicesId;
+                try {
+                    devicesId = devicesIdRsp.getString("dfp");
+                    HashMap<String, HashMap<String, String>> cookies = new HashMap<>();
+                    HashMap<String, String> cookie = new HashMap<>();
+                    cookie.put("RAIL_DEVICEID", devicesId);
+                    cookies.put("/", cookie);
+                    session.addCookies(cookies);
+                } catch (JSONException e) {
+                    continue;
+                }
+
                 IsNeedCaptcha = true;
                 Log.d("是否需要验证码", "需要");
                 // 需要验证码
-                String url = "https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand&0.6523880813900003&callback=jQuery19103423450215919036_1554172702898&_=1554172702998";
+                url = "https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand&0.6523880813900003&callback=jQuery19103423450215919036_1554172702898&_=1554172702998";
                 try {
                     bitmap = (Bitmap) session.get(url, null);
                     if (bitmap != null) {
@@ -260,6 +280,19 @@ public class LoginActivity extends AppCompatActivity{
         }
     }
 
+    public void auth(){
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put("Referer", "https://kyfw.12306.cn/otn/view/index.html");
+        headers.put("Host", "kyfw.12306.cn");
+        session.get("https://kyfw.12306.cn/otn/resources/login.html", headers);
+        headers.clear();
+        headers.put("Referer", "https://kyfw.12306.cn/otn/resources/login.html");
+        headers.put("Host", "kyfw.12306.cn");
+        HashMap<String, String> data = new HashMap<>();
+        data.put("appid", "otn");
+        session.post("https://kyfw.12306.cn/passport/web/auth/uamtk-static", headers, data);
+    }
+
     public void onClick(View view) {
         if (view.getId() == R.id.login) {
             SuperEditTextView userName = findViewById(R.id.userName);
@@ -297,7 +330,9 @@ public class LoginActivity extends AppCompatActivity{
                                     int again = 20; // 网络异常重试次数
                                     for (int i = 0; i < again; i++) {
                                         try {
-                                            jsonObject = (JSONObject) session.post(loginUrl, null, paramsMap);
+                                            HashMap<String, String> headers = new HashMap<>();
+                                            headers.put("Referer", "https://kyfw.12306.cn/otn/resources/login.html");
+                                            jsonObject = (JSONObject) session.post(loginUrl, headers, paramsMap);
                                             break;
                                         } catch (ClassCastException e) {
                                             try {

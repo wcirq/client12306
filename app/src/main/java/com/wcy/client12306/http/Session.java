@@ -84,12 +84,19 @@ public class Session implements Serializable {
     }
 
     private HttpURLConnection setRequestProperty(HttpURLConnection httpURLConnection, HashMap<String, String> headers) {
+        httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) 12306-electron/1.0.1 Chrome/59.0.3071.115 Electron/1.8.4 Safari/537.36");
+//        httpURLConnection.setRequestProperty("Accept-Encoding", "gzip, deflate");
+        httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        httpURLConnection.setRequestProperty("Origin", "https://kyfw.12306.cn");
+        httpURLConnection.setRequestProperty("Connection", "keep-alive");
+
         if (headers != null) {
             for (String key : headers.keySet()) {
                 httpURLConnection.setRequestProperty(key, headers.get(key));
             }
         } else {
-            httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
+//            httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
+//            httpURLConnection.setRequestProperty("referer", "https://kyfw.12306.cn/otn/resources/login.html");
 //            httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0");
         }
         return httpURLConnection;
@@ -137,6 +144,9 @@ public class Session implements Serializable {
                 String str = stringBuffer.toString();
                 if(str.contains("jQuery")) {
                     str = str.split("\\(")[1].split("\\)")[0];
+                }else if(str.contains("callbackFunction")){
+                    str = str.split("\\(")[1].split("\\)")[0];
+                    str = str.substring(1, str.length()-1);
                 }
                 result = new JSONObject(str);
 
