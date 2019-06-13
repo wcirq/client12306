@@ -34,6 +34,10 @@ public class Session implements Serializable {
 
     }
 
+    public void clearCookies(){
+        COOKIES.clear();
+    }
+
     public void addCookies(HashMap<String, HashMap<String, String>> cookies){
         StringBuffer cookiesBuffer = new StringBuffer();
         for (Map.Entry<String, HashMap<String, String>> cookiesPath:cookies.entrySet()){

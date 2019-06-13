@@ -341,7 +341,7 @@ public class LoginActivity extends AppCompatActivity{
                                 jsonObject = (JSONObject) session.get(finalUrl, null);
                                 if (jsonObject.getInt("result_code") == 4) {
                                     String loginUrl = "https://kyfw.12306.cn/passport/web/login";
-                                    int again = 20; // 网络异常重试次数
+                                    int again = 10; // 网络异常重试次数
                                     for (int i = 0; i < again; i++) {
                                         try {
                                             HashMap<String, String> headers = new HashMap<>();
@@ -350,7 +350,7 @@ public class LoginActivity extends AppCompatActivity{
                                             break;
                                         } catch (ClassCastException e) {
                                             try {
-                                                Thread.sleep(500);
+                                                Thread.sleep(100);
                                             } catch (InterruptedException e1) {
                                                 e1.printStackTrace();
                                             }
@@ -378,7 +378,9 @@ public class LoginActivity extends AppCompatActivity{
                                             finish();
                                         } else {
                                             if (jsonObject.getInt("result_code") == 5) {
-                                                //验证码校验失败
+                                                // 验证码校验失败
+                                                // 清除cookies 防止验证码需要验证两种物品
+                                                session.clearCookies();
                                                 getCaptcha();
                                             }
                                             Log.d("jsonObject", jsonObject.toString());
@@ -388,6 +390,8 @@ public class LoginActivity extends AppCompatActivity{
                                         e.printStackTrace();
                                     }
                                 } else {
+                                    // 清除cookies 防止验证码需要验证两种物品
+                                    session.clearCookies();
                                     getCaptcha();
                                     handler.sendEmptyMessage(2);
                                 }

@@ -191,17 +191,17 @@ public class RocketService extends Service {
                                 };
                                 runable.run();
                             }
-//                            if (bitmap!=null){
-//                                BitmapDrawable drawable= new BitmapDrawable(getResources(), bitmap);
-//                                ImageView imageView = new ImageView(getApplicationContext());
-//
-//                                WindowManager.LayoutParams params = new WindowManager.LayoutParams();
-//                                params.height = WindowManager.LayoutParams.WRAP_CONTENT;
-//                                params.width = WindowManager.LayoutParams.WRAP_CONTENT;;
-//                                imageView.setLayoutParams(params);
-//                                imageView.setBackground(drawable);
-//                                mToastLogView.addView(imageView);
-//                            }
+                            if (bitmap!=null){
+                                BitmapDrawable drawable= new BitmapDrawable(getResources(), bitmap);
+                                ImageView imageView = new ImageView(getApplicationContext());
+
+                                WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+                                params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+                                params.width = WindowManager.LayoutParams.WRAP_CONTENT;;
+                                imageView.setLayoutParams(params);
+                                imageView.setBackground(drawable);
+                                mToastLogView.addView(imageView);
+                            }
                         }
                     });
                 }
