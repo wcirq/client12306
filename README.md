@@ -15,3 +15,5 @@
 ![欢迎页](image/welcome.png)
   - ##### 登录页
 ![登录页](image/login.png)
+  - ##### 订票页
+![订票页](image/buy_ticket.png)
