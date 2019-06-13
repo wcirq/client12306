@@ -15,6 +15,7 @@ import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -190,17 +191,17 @@ public class RocketService extends Service {
                                 };
                                 runable.run();
                             }
-                            if (bitmap!=null){
-                                BitmapDrawable drawable= new BitmapDrawable(getResources(), bitmap);
-                                ImageView imageView = new ImageView(getApplicationContext());
-
-                                WindowManager.LayoutParams params = new WindowManager.LayoutParams();
-                                params.height = WindowManager.LayoutParams.WRAP_CONTENT;
-                                params.width = WindowManager.LayoutParams.WRAP_CONTENT;;
-                                imageView.setLayoutParams(params);
-                                imageView.setBackground(drawable);
-                                mToastLogView.addView(imageView);
-                            }
+//                            if (bitmap!=null){
+//                                BitmapDrawable drawable= new BitmapDrawable(getResources(), bitmap);
+//                                ImageView imageView = new ImageView(getApplicationContext());
+//
+//                                WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+//                                params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+//                                params.width = WindowManager.LayoutParams.WRAP_CONTENT;;
+//                                imageView.setLayoutParams(params);
+//                                imageView.setBackground(drawable);
+//                                mToastLogView.addView(imageView);
+//                            }
                         }
                     });
                 }
@@ -376,7 +377,11 @@ public class RocketService extends Service {
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR |
                 WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
         mParams.format = PixelFormat.TRANSLUCENT;
-        mParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        if (Build.VERSION.SDK_INT>=26) {//8.0新特性
+            mParams.type= WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        }else {
+            mParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        }
         // 加载ToastRocketView显示效果的布局文件
         mToastRocketView = View.inflate(this, R.layout.toast_rocket_view, null);
         // 窗体布局中加入自定义的展示小火箭的View
@@ -386,10 +391,14 @@ public class RocketService extends Service {
         AnimationDrawable animDraw = (AnimationDrawable) mRocketImage.getBackground();
         animDraw.start();
 
-        mLogParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        if (Build.VERSION.SDK_INT>=26) {//8.0新特性
+            mLogParams.type= WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        }else {
+            mLogParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        }
         mLogParams.gravity = Gravity.LEFT + Gravity.TOP;
         mLogParams.format = PixelFormat.RGBA_8888;
-        //设置可以显示在状态栏上
+        //设置可以显示在状态栏上WindowManager
         mLogParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR |
                 WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
