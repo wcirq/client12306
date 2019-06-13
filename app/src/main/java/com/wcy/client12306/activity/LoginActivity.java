@@ -65,6 +65,7 @@ public class LoginActivity extends AppCompatActivity{
     boolean IsNeedCaptcha = true;
     OcrModel ocrModel;
     ClassifyModel classifyModel;
+    public int viewIds[][]; // 8个验证码
 
     public LoginActivity() {
     }
@@ -161,7 +162,7 @@ public class LoginActivity extends AppCompatActivity{
             }
         }).start();
         ocrModel = new OcrModel(getAssets());
-        classifyModel = new ClassifyModel(getAssets());
+        classifyModel = new ClassifyModel(getAssets(), this);
         if (isFrist){
             startVideoService();
         }
@@ -241,23 +242,23 @@ public class LoginActivity extends AppCompatActivity{
                             if (i == 0) {
                                 bmp = Bitmap.createBitmap(bitmap, 0, 0, 293, 28);
                             } else {
+                                int interval = 3;
+                                int w = 72, h = 72;
                                 int j = i - 1;
                                 int col = j % 4;
                                 int row = (int) j / 4;
-                                int x = col * 72 + 3;
-                                int y = row * 72 + 39;
-                                int w = 72;
-                                int h = 72;
+                                int x = col * w + interval;
+                                int y = row * h + 39;
                                 bmp = Bitmap.createBitmap(bitmap, x, y, w, h);
                                 Log.d("", "");
                             }
                             bitmaps.add(bmp);
                         }
                         Bitmap inputImage = Bitmap.createBitmap(bitmap, 120, 3, 57, 19);
-                        ocrModel.predict(inputImage);
+                        int labelIndex = ocrModel.predict(inputImage);
                         for (int i=1;i<=8;i++){
                             if(classifyModel!=null) {
-                                classifyModel.predict(bitmaps.get(i));
+                                classifyModel.predict(labelIndex, bitmaps.get(i), i-1);
                             }
                         }
 
@@ -473,7 +474,7 @@ public class LoginActivity extends AppCompatActivity{
     }
 
     private void initMenu() {
-        int viewIds[][] = {{R.id.answer1, 0}, {R.id.answer2, 1}, {R.id.answer3, 2}, {R.id.answer4, 3}, {R.id.answer5, 4}, {R.id.answer6, 5}, {R.id.answer7, 6}, {R.id.answer8, 7}};
+        viewIds = new int[][]{{R.id.answer1, 0}, {R.id.answer2, 1}, {R.id.answer3, 2}, {R.id.answer4, 3}, {R.id.answer5, 4}, {R.id.answer6, 5}, {R.id.answer7, 6}, {R.id.answer8, 7}};
         for (int i=0;i<viewIds.length;i++){
             menuItemSelected(viewIds[i], new MenuSelectedListener() {
                 @Override

@@ -328,9 +328,9 @@ public class ImageUtil {
         source.getPixels(intValues, 0, source.getWidth(), 0, 0, source.getWidth(), source.getHeight());
         for (int i = 0; i < intValues.length; ++i) {
             final int val = intValues[i];
-            output[i * 3] = ((val >> 16) & 0xFF)/255.0f;
-            output[i * 3 + 1] = ((val >> 8) & 0xFF)/255.0f;
-            output[i * 3 + 2] = (val & 0xFF)/255.0f;
+            output[i * 3+2] = ((val >> 16) & 0xFF)-123.68f;
+            output[i * 3 + 1] = ((val >> 8) & 0xFF)-116.779f;
+            output[i * 3] = (val & 0xFF)-103.939f;
         }
 
         return output;

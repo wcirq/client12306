@@ -53,63 +53,27 @@ public class OcrModel {
         return new Object[]{best,best_confidence};
     }
 
-    public void predict(final Bitmap bitmap){
+    public int predict(final Bitmap bitmap) {
+        Bitmap resized_image = ImageUtil.processBitmap(bitmap, INPUT_SIZE[1], INPUT_SIZE[0]);
 
+        floatValues = ImageUtil.dealImage(resized_image);
+        tf.feed(INPUT_NAME, floatValues, 1, INPUT_SIZE[0], INPUT_SIZE[1], INPUT_SIZE[2]);
+        tf.run(new String[]{OUTPUT_NAME});
+        tf.fetch(OUTPUT_NAME, PREDICTIONS);
+        Object[] results = argmax(PREDICTIONS);
+        int class_index = (Integer) results[0];
+        float confidence = (Float) results[1];
+        try {
 
-        //Runs inference in background thread
-        new AsyncTask<Integer,Integer,Integer>(){
+            final String conf = String.valueOf(confidence * 100).substring(0, 5);
 
-            @Override
-
-            protected Integer doInBackground(Integer ...params){
-
-                //Resize the image into 224 x 224
-                Bitmap resized_image = ImageUtil.processBitmap(bitmap, INPUT_SIZE[1], INPUT_SIZE[0]);
-//                Bitmap convertGreyImg = ImageUtil.convertGreyImg(resized_image);
-
-                //Normalize the pixels
-//                floatValues = ImageUtil.normalizeBitmap(convertGreyImg,INPUT_SIZE[1], INPUT_SIZE[0],127.5f,1.0f);
-                floatValues = ImageUtil.dealImage(resized_image);
-
-                //Pass input into the tensorflow
-                tf.feed(INPUT_NAME,floatValues,1,INPUT_SIZE[0], INPUT_SIZE[1],INPUT_SIZE[2]);
-
-                //compute predictions
-                tf.run(new String[]{OUTPUT_NAME});
-
-                //copy the output into the PREDICTIONS array
-                tf.fetch(OUTPUT_NAME,PREDICTIONS);
-
-                //Obtained highest prediction
-                Object[] results = argmax(PREDICTIONS);
-
-
-                int class_index = (Integer) results[0];
-                float confidence = (Float) results[1];
-
-
-                try{
-
-                    final String conf = String.valueOf(confidence * 100).substring(0,5);
-
-                    //Convert predicted class index into actual label name
+            //Convert predicted class index into actual label name
 //                    final String label = ImageUtil.getLabel(inputStream,class_index);
-                    final String label = verify_titles[class_index];
-                    Log.d("结果：", label);
-                }
-
-                catch (Exception e){
-
-
-                }
-
-
-                return 0;
-            }
-
-
-
-        }.execute(0);
-
+            final String label = verify_titles[class_index];
+            Log.d("结果：", label);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return class_index;
     }
 }
