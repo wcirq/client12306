@@ -20,7 +20,6 @@ public class OcrModel {
     private String MODEL_PATH = "file:///android_asset/model.v2.0.pb";
     private String INPUT_NAME = "conv2d_11_input:0";
     private String OUTPUT_NAME = "dense_6/Softmax:0";
-//    private String OUTPUT_NAME = "output_1";
     private TensorFlowInferenceInterface tf;
 
     //ARRAY TO HOLD THE PREDICTIONS AND FLOAT VALUES TO HOLD THE IMAGE DATA
