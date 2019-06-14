@@ -22,10 +22,15 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+/***
+ * 实现自动管理Cookie
+ */
 public class Session implements Serializable {
     private HashMap<String, HashMap<String, String>> COOKIES = new HashMap<>();
     private String url;
@@ -39,7 +44,6 @@ public class Session implements Serializable {
     }
 
     public void addCookies(HashMap<String, HashMap<String, String>> cookies){
-        StringBuffer cookiesBuffer = new StringBuffer();
         for (Map.Entry<String, HashMap<String, String>> cookiesPath:cookies.entrySet()){
             String keyPath = cookiesPath.getKey();
             if (!COOKIES.containsKey(keyPath)){
@@ -47,7 +51,7 @@ public class Session implements Serializable {
                 COOKIES.put(keyPath, cookies.get(keyPath));
             }else {
                 for (Map.Entry<String, String> cookiesPathValue:cookiesPath.getValue().entrySet()) {
-                    COOKIES.get(keyPath).put(cookiesPathValue.getKey(), cookiesPathValue.getValue());
+                    Objects.requireNonNull(COOKIES.get(keyPath)).put(cookiesPathValue.getKey(), cookiesPathValue.getValue());
                 }
             }
         }
@@ -89,7 +93,6 @@ public class Session implements Serializable {
 
     private HttpURLConnection setRequestProperty(HttpURLConnection httpURLConnection, HashMap<String, String> headers) {
         httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) 12306-electron/1.0.1 Chrome/59.0.3071.115 Electron/1.8.4 Safari/537.36");
-//        httpURLConnection.setRequestProperty("Accept-Encoding", "gzip, deflate");
         httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         httpURLConnection.setRequestProperty("Origin", "https://kyfw.12306.cn");
         httpURLConnection.setRequestProperty("Connection", "keep-alive");
@@ -98,10 +101,6 @@ public class Session implements Serializable {
             for (String key : headers.keySet()) {
                 httpURLConnection.setRequestProperty(key, headers.get(key));
             }
-        } else {
-//            httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
-//            httpURLConnection.setRequestProperty("referer", "https://kyfw.12306.cn/otn/resources/login.html");
-//            httpURLConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0");
         }
         return httpURLConnection;
     }
@@ -115,7 +114,7 @@ public class Session implements Serializable {
             e.printStackTrace();
         }
 
-        StringBuffer cookiesBuffer = new StringBuffer();
+        StringBuilder cookiesBuffer = new StringBuilder();
         for (Map.Entry<String, HashMap<String, String>> cookiesPath:COOKIES.entrySet()){
             String key = cookiesPath.getKey();
             if (pathKey.contains(key)){
@@ -139,13 +138,13 @@ public class Session implements Serializable {
             InputStream inputStream = httpURLConnection.getInputStream();
             if (httpURLConnection.getContentType().contains("application/json")) {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"));
-                StringBuffer stringBuffer = new StringBuffer();
+                StringBuilder stringBuilder = new StringBuilder();
                 String temp = null;
                 while ((temp = bufferedReader.readLine()) != null) {
-                    stringBuffer.append(temp);
-                    stringBuffer.append("\r\n");
+                    stringBuilder.append(temp);
+                    stringBuilder.append("\r\n");
                 }
-                String str = stringBuffer.toString();
+                String str = stringBuilder.toString();
                 if(str.contains("jQuery")) {
                     str = str.split("\\(")[1].split("\\)")[0];
                 }else if(str.contains("callbackFunction")){
@@ -155,14 +154,14 @@ public class Session implements Serializable {
                 result = new JSONObject(str);
 
             } else if (httpURLConnection.getContentType().contains("text/html")|httpURLConnection.getContentType().contains("text/javascript")) {
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"));
-                StringBuffer stringBuffer = new StringBuffer();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+                StringBuilder stringBuilder = new StringBuilder();
                 String temp = null;
                 while ((temp = bufferedReader.readLine()) != null) {
-                    stringBuffer.append(temp);
-                    stringBuffer.append("\r\n");
+                    stringBuilder.append(temp);
+                    stringBuilder.append("\r\n");
                 }
-                result = stringBuffer.toString();
+                result = stringBuilder.toString();
             } else if (httpURLConnection.getContentType().contains("image/jpeg")) {
                 result = BitmapFactory.decodeStream(inputStream);
             }

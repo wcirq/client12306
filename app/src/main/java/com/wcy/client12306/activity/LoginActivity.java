@@ -294,6 +294,9 @@ public class LoginActivity extends AppCompatActivity{
         }
     }
 
+    /**
+     * 用户身份验证
+     */
     public void auth(){
         HashMap<String, String> headers = new HashMap<>();
         headers.put("Referer", "https://kyfw.12306.cn/otn/view/index.html");

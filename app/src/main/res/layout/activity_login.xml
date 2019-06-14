@@ -11,7 +11,9 @@
         android:id="@+id/start"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="GO MainActivity"
+        android:text="悬浮窗"
+        android:textColor="@color/translucent"
+        android:background="@color/transparent"
         android:onClick="onClick"/>
     <View
         android:layout_width="match_parent"
