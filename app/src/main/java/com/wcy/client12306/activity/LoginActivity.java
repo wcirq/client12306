@@ -403,6 +403,7 @@ public class LoginActivity extends AppCompatActivity{
                                 try {
                                     Log.e("登录失败", e.toString());
                                     Thread.sleep(1000);
+                                    session.clearCookies();
                                     getCaptcha();
                                     Looper.prepare();
                                     Toast.makeText(getApplicationContext(), "登录失败！", Toast.LENGTH_SHORT).show();
@@ -411,6 +412,7 @@ public class LoginActivity extends AppCompatActivity{
                                     e1.printStackTrace();
                                 }
                                 e.printStackTrace();
+                                session.clearCookies();
                                 getCaptcha();
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -541,6 +543,7 @@ public class LoginActivity extends AppCompatActivity{
         new Thread(new Runnable() {
             @Override
             public void run() {
+                session.clearCookies();
                 getCaptcha();
             }
         }).start();
