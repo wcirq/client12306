@@ -9,7 +9,7 @@
   - [x] 升级功能 (实现下载App并安装，但下载的是wifi万能钥匙，后面再真的实现升级功能)
   - [ ] 其他功能 (想到一出是一出, 随时添加)
 #### 自动选择验证图片
-![自动验证](image/verify.gif)
+  - ![自动验证](image/verify.gif)
 #### 编译好的App
   - [下载体验](https://raw.githubusercontent.com/Mycheny/client12306/master/app-release/12306.apk)
 #### 部分页面展示
