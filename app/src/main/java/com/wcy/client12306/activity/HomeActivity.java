@@ -281,6 +281,11 @@ public class HomeActivity extends AppCompatActivity {
                         intent_buy.putExtra("session", session);
                         startActivity(intent_buy);
                         break;
+                    case R.id.browse_image:
+                        Intent intent_browse = new Intent(HomeActivity.this, WelcomeActivity.class);
+                        intent_browse.putExtra("CYCLE", true);
+                        startActivity(intent_browse);
+                        break;
                     default:
                         break;
                 }

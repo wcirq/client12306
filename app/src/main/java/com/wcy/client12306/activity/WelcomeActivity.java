@@ -59,6 +59,7 @@ public class WelcomeActivity extends AppCompatActivity {
     int waiting_time = 3;
     String userInfoPath;
     Session session=null;
+    boolean CYCLE = false; // 是否循环播放壁纸
 
     private static class MyHandler extends Handler{
         private final WeakReference<WelcomeActivity> mTarget;
@@ -112,7 +113,11 @@ public class WelcomeActivity extends AppCompatActivity {
 //        requestWindowFeature(Window.FEATURE_NO_TITLE); // 继承的是Activity时
         getWindow().setFlags(WindowManager.LayoutParams. FLAG_FULLSCREEN , WindowManager.LayoutParams. FLAG_FULLSCREEN);
         setContentView(R.layout.activity_welcome);
-
+        Intent intent = getIntent();
+        Object cycle = intent.getSerializableExtra("CYCLE");
+        if (cycle!=null){
+            CYCLE = (boolean) cycle;
+        }
         imageView = findViewById(R.id.imageView);
         Resources res = WelcomeActivity.this.getResources();
         BitmapDrawable bitmapDrawable = (BitmapDrawable) res.getDrawable(R.drawable.welcome);
@@ -225,27 +230,32 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private void nextActivity(){
-        userInfoPath = getFilesDir().getAbsolutePath()+File.separator+"userInfo.ser";
-        boolean exists = new File(userInfoPath).exists();
-        if (exists) {
-            session = Session.load(userInfoPath);
-            boolean isSuccessful = check_user();
-            if (isSuccessful) {
-                MessageUtil messageUtil = new MessageUtil();
-                messageUtil.setMessStr("");
-                intent = new Intent(getApplicationContext(), HomeActivity.class);
-                intent.putExtra("session", session);
-                intent.putExtra("messageUtil", messageUtil);
-                startActivity(intent);
-                finish(); // 销毁 Activit 禁止返回欢迎页
+        if (CYCLE){
+            intent = new Intent(getApplicationContext(), WelcomeActivity.class);
+            intent.putExtra("CYCLE", true);
+            startActivity(intent);
+            finish();
+        }else {
+            userInfoPath = getFilesDir().getAbsolutePath()+File.separator+"userInfo.ser";
+            boolean exists = new File(userInfoPath).exists();
+            if (exists) {
+                session = Session.load(userInfoPath);
+                boolean isSuccessful = check_user();
+                if (isSuccessful) {
+                    MessageUtil messageUtil = new MessageUtil();
+                    messageUtil.setMessStr("");
+                    intent = new Intent(getApplicationContext(), HomeActivity.class);
+                    intent.putExtra("session", session);
+                    intent.putExtra("messageUtil", messageUtil);
+                    startActivity(intent);
+                    finish(); // 销毁 Activit 禁止返回欢迎页
+                }else {
+                    gotoLogin();
+                }
             }else {
                 gotoLogin();
             }
-        }else {
-            gotoLogin();
         }
-
-
     }
 
     @Override

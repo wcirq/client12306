@@ -39,4 +39,12 @@
         </menu>
     </item>
 
+    <item android:title="其他">
+        <menu>
+            <item
+                android:id="@+id/browse_image"
+                android:icon="@drawable/ic_menu_manage"
+                android:title="浏览壁纸" />
+        </menu>
+    </item>
 </menu>
